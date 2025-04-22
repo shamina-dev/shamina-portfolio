@@ -1,0 +1,13 @@
+<!-- features/skills/skills.component.html -->
+<div class="container">
+  <h2 class="text-center mb-4">Skills</h2>
+  <div class="row g-3">
+    <div class="col-sm-6 col-lg-3" *ngFor="let skill of skillsList">
+      <p-panel> <!-- PrimeNG Panel or Card -->
+        <ng-template pTemplate="header">
+          <i class="pi pi-{{ skill.icon }}"></i> {{ skill.name }}
+        </ng-template>
+      </p-panel>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<!-- features/contact/contact.component.html -->
+<div class="container">
+  <h2 class="text-center mb-4">Let’s Discuss Your Project</h2>
+  <form (ngSubmit)="onSubmit()" [formGroup]="contactForm">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <input formControlName="fullName" class="form-control" placeholder="Full name" />
+      </div>
+      <div class="col-md-6">
+        <input formControlName="email" type="email" class="form-control" placeholder="Email" />
+      </div>
+      <div class="col-md-12">
+        <input formControlName="phone" class="form-control" placeholder="Phone number" />
+      </div>
+      <div class="col-md-12">
+        <textarea formControlName="message" rows="5" class="form-control" placeholder="Short description"></textarea>
+      </div>
+      <div class="col-md-12 text-end">
+        <button type="submit" class="btn btn-primary">Send Message</button>
+      </div>
+    </div>
+  </form>
+</div>
