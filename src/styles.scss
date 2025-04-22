@@ -1,1 +1,20 @@
-/* You can add global styles to this file, and also import other style files */
+/* styles.scss */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+.container-fluid {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+}
+
+section {
+  scroll-snap-align: start;
+}
