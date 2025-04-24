@@ -1,0 +1,118 @@
+:root {
+  --primary: #0056FF;
+  --light-bg: #E8F0FE;
+  --hex-stroke: rgba(0, 86, 255, 0.4);
+  --font: 'Open Sans', sans-serif;
+}
+.hero-intro {
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+.hero-name {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.1;
+}
+.hero-subtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+.hero-subtitle .role {
+  font-weight: 600;
+  color: var(--primary);
+}
+.hero-desc {
+  font-size: 1rem;
+  color: #333;
+  max-width: 460px;
+}
+
+/* social-icons.component.scss */
+.social-icons a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background-color: #558BFF;   /* default non-hover */
+  color: #FFFFFF;              /* icon color */
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.social-icons a:hover,
+.social-icons a.selected {
+  background-color: #135EFF;   /* hover or selected */
+  color: #FFFFFF;              /* keep icon white */
+}
+
+.social-icons i {
+  font-size: 1.2rem;
+}
+
+
+/* ─── DOWNLOAD BUTTON ──────────────────────────────────────────────── */
+.download-btn {
+  background-color: var(--primary);
+  color: #fff;
+  padding: 0.7rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  transition: background 0.2s;
+}
+.download-btn:hover {
+  background-color: #0041cc;
+}
+
+/* ─── OVERLAPPING SHAPES ───────────────────────────────────────────── */
+.shape-filled,
+.shape-blue-outline,
+.shape-black-outline,
+.hex-pattern {
+  position: absolute;
+}
+
+.shape-filled {
+  width: 300px; height: 300px;
+  background-color: var(--primary);
+  border-radius: 12px;
+  right: 60px;
+  bottom: -120px;
+}
+// .shape-blue-outline {
+//   width: 320px; height: 320px;
+//   border: 4px solid var(--primary);
+//   border-radius: 12px;
+//   top: 0; right: 0;
+// }
+.shape-black-outline {
+  width: 280px; height: 280px;
+  border: 4px solid #000;
+  border-radius: 12px;
+  top: -88px;
+  right: 6px;
+}
+
+/* ─── HEX PATTERN ──────────────────────────────────────────────────── */
+.hex-pattern {
+  bottom: -20px; right: -20px;
+  display: grid;
+  grid-template-columns: repeat(3, 60px);
+  grid-auto-rows: 50px;
+  gap: 8px;
+  transform: scale(1.1);
+}
+
+.hex {
+  width: 60px; height: 50px;
+  border: 3px solid var(--hex-stroke);
+  clip-path: polygon(
+    25% 0%, 75% 0%,
+    100% 50%, 75% 100%,
+    25% 100%, 0% 50%
+  );
+}
