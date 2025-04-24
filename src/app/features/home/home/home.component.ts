@@ -6,5 +6,18 @@ import { Component } from '@angular/core';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
+  icons = [
+    { name: 'email',     piClass: 'pi-envelope' },
+    { name: 'linkedin',  piClass: 'pi-linkedin' },
+    { name: 'instagram', piClass: 'pi-instagram' },
+    { name: 'facebook',  piClass: 'pi-facebook' }
+  ];
+
+  selected = '';
+
+  select(name: string, event: Event) {
+    event.preventDefault();
+    this.selected = name;
+  }
 
 }
