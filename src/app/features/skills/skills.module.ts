@@ -8,7 +8,7 @@ import { PanelModule } from 'primeng/panel';
 
 @NgModule({
   declarations: [SkillsComponent],
-  imports: [CommonModule, SkillsRoutingModule, PanelModule],
+  imports: [CommonModule, SkillsRoutingModule, PanelModule,],
   exports:[SkillsComponent]
 })
 export class SkillsModule { }

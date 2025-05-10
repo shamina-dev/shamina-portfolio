@@ -1,11 +1,51 @@
-<!-- features/home/home.component.html -->
-<div class="row align-items-center">
-  <div class="col-md-6">
-    <h1>Hello, I’m <strong>Shamina Palansooriya</strong></h1>
-    <p>Software Engineer Intern</p>
-    <button class="btn btn-primary">Download CV</button>
+<section class="hero position-relative overflow-hidden py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <!-- left text -->
+      <div class="col-md-6">
+        <p class="hero-intro mb-2">Hello It’s me</p>
+        <h1 class="hero-name mb-3">Shamina Palansooriya</h1>
+        <p class="hero-subtitle mb-3">
+          And I’m a <span class="role">Software Engineer Intern</span>
+        </p>
+        <p class="hero-desc mb-4">
+          Undergraduate software engineering student and intern passionate about innovative coding solutions.
+        </p>
+
+        <!-- social-icons.component.html -->
+        <div class="social-icons mb-4">
+          <a
+            *ngFor="let icon of icons"
+            href="#"
+            [ngClass]="{ 'selected': selected === icon.name }"
+            (click)="select(icon.name, $event)"
+          >
+            <i class="pi" [ngClass]="icon.piClass"></i>
+          </a>
+        </div>
+
+        <button class="btn download-btn" download>
+          Download CV
+        </button>
+      </div>
+
+      <!-- right shapes -->
+        <div class="col-md-6 position-relative ">
+          <!-- big filled blue -->
+          <div class="shape-filled"></div>
+          <!-- black outline -->
+          <div class="shape-black-outline"></div>
+
+          <!-- hex pattern -->
+          <div class="hex-pattern">
+            <div class="hex"></div>
+            <div class="hex"></div>
+            <div class="hex"></div>
+            <div class="hex"></div>
+            <div class="hex"></div>
+            <div class="hex"></div>
+          </div>
+        </div>
+    </div>
   </div>
-  <div class="col-md-6 text-center">
-    <!-- your hero image or illustration -->
-  </div>
-</div>
+</section>
