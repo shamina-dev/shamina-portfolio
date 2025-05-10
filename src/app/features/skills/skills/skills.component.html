@@ -1,9 +1,35 @@
 <!-- features/skills/skills.component.html -->
-<div class="container">
+<!-- About me section -->
+<section class="container py-5">
+  <div class="row align-items-center">
+    <!-- Left column: profile image frame -->
+    <div class="col-md-4 text-center mb-4 mb-md-0">
+      <div class="profile-frame mx-auto">
+
+      </div>
+    </div>
+    <!-- Right column: text content -->
+    <div class="col-md-8">
+      <h2 class="fw-bold">
+        About <span class="text-primary">Me</span>
+      </h2>
+      <h4 class="text-primary mb-3">Software Engineer Intern</h4>
+      <p>
+        I am a dedicated Software Engineering Undergraduate and Software
+        Engineer Intern with hands-on experience in full-stack development
+        and UI/UX design. I excel at creating robust and user-centric web
+        applications by leveraging modern development frameworks and tools.
+        Passionate about innovation and problem-solving, I am eager to
+        contribute to impactful projects and continuously expand my
+        technical expertise.
+      </p>
+    </div>
+  </div>
+  <div class="container">
   <h2 class="text-center mb-4">Skills</h2>
   <div class="row g-3">
     <div class="col-sm-6 col-lg-3" *ngFor="let skill of skillsList">
-      <p-panel> <!-- PrimeNG Panel or Card -->
+      <p-panel>
         <ng-template pTemplate="header">
           <i class="pi pi-{{ skill.icon }}"></i> {{ skill.name }}
         </ng-template>
@@ -11,3 +37,4 @@
     </div>
   </div>
 </div>
+</section>

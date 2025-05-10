@@ -13,9 +13,9 @@ export interface Skill {
 export class SkillsComponent {
 
   skillsList: Skill[] = [
-    { name: 'Angular', icon: 'angular' },
-    { name: 'TypeScript', icon: 'typescript' },
-    { name: 'HTML5', icon: 'html5' },
+    { name: 'Angular', icon: 'pi-microsoft' },
+    { name: 'TypeScript', icon: 'pi-microsoft' },
+    { name: 'HTML5', icon: 'pi-microsoft' },
     { name: 'CSS3', icon: 'css3' }
     // add more skills as needed
   ];
