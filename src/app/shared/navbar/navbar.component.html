@@ -6,6 +6,17 @@
       <span class="brand-accent">/&gt;</span>
     </a>
     
+    <div class="d-flex align-items-center gap-2 d-lg-none ms-auto me-2">
+      <!-- Theme toggle button for mobile -->
+      <button 
+        class="theme-toggle-btn" 
+        (click)="toggleTheme()" 
+        [attr.aria-label]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        <i class="bi" [ngClass]="isDarkMode ? 'bi-sun-fill' : 'bi-moon-stars-fill'"></i>
+      </button>
+    </div>
+
     <button
       class="navbar-toggler collapsed"
       type="button"
@@ -21,7 +32,7 @@
     </button>
 
     <div class="collapse navbar-collapse" id="mainNav">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
         <li class="nav-item">
           <a class="nav-link" [class.active]="activeSection === 'home'" routerLink="/" fragment="home" (click)="scrollTo('home', $event)">Home</a>
         </li>
@@ -41,7 +52,16 @@
           <a class="nav-link" [class.active]="activeSection === 'contact'" routerLink="/" fragment="contact" (click)="scrollTo('contact', $event)">Contact</a>
         </li>
       </ul>
-      <div class="ms-lg-3 d-none d-lg-block">
+      <div class="ms-lg-3 d-none d-lg-flex align-items-center gap-3">
+        <!-- Desktop Theme Toggle Switch -->
+        <button 
+          class="theme-toggle-btn" 
+          (click)="toggleTheme()" 
+          [attr.aria-label]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+          [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+          <i class="bi" [ngClass]="isDarkMode ? 'bi-sun-fill' : 'bi-moon-stars-fill'"></i>
+        </button>
+
         <a routerLink="/" fragment="contact" (click)="scrollTo('contact', $event)" class="btn btn-neon py-2 px-4 btn-sm">Hire Me</a>
       </div>
     </div>

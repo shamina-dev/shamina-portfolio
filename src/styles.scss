@@ -2,7 +2,7 @@
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
 @import "../node_modules/bootstrap/scss/bootstrap";
 
-:root {
+:root, [data-theme="dark"] {
   --primary-glow: #00f2fe;
   --secondary-glow: #b600ff;
   --accent-glow: #00ffc4;
@@ -10,11 +10,64 @@
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
+  --heading-color: #ffffff;
   --glass-bg: rgba(255, 255, 255, 0.02);
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-shadow: rgba(0, 0, 0, 0.3);
+  --card-bg: rgba(255, 255, 255, 0.02);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --card-hover-border: rgba(255, 255, 255, 0.12);
+  --nav-bg: rgba(3, 3, 8, 0.5);
+  --nav-scrolled-bg: rgba(3, 3, 8, 0.88);
+  --nav-dropdown-bg: rgba(5, 5, 12, 0.95);
+  --terminal-bg: rgba(0, 0, 0, 0.25);
+  --terminal-header-bg: rgba(255, 255, 255, 0.03);
+  --terminal-border: rgba(255, 255, 255, 0.08);
+  --input-bg: rgba(255, 255, 255, 0.015);
+  --input-border: rgba(255, 255, 255, 0.08);
+  --input-color: #ffffff;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.02);
+  --btn-secondary-border: rgba(255, 255, 255, 0.1);
+  --btn-secondary-color: #ffffff;
+  --btn-secondary-hover-bg: rgba(255, 255, 255, 0.08);
+  --btn-neon-color: #ffffff;
   --font-heading: 'Space Grotesk', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
+  --blob-opacity: 0.12;
+  --blob-blend: screen;
+}
+
+[data-theme="light"] {
+  --primary-glow: #0284c7;
+  --secondary-glow: #8b5cf6;
+  --accent-glow: #0d9488;
+  --bg-dark: #f8fafc;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --heading-color: #0f172a;
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --glass-shadow: rgba(148, 163, 184, 0.12);
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-border: rgba(226, 232, 240, 0.9);
+  --card-hover-border: rgba(2, 132, 199, 0.3);
+  --nav-bg: rgba(248, 250, 252, 0.75);
+  --nav-scrolled-bg: rgba(255, 255, 255, 0.94);
+  --nav-dropdown-bg: rgba(255, 255, 255, 0.98);
+  --terminal-bg: #0f172a;
+  --terminal-header-bg: #1e293b;
+  --terminal-border: rgba(51, 65, 85, 0.8);
+  --input-bg: #ffffff;
+  --input-border: rgba(203, 213, 225, 0.9);
+  --input-color: #0f172a;
+  --btn-secondary-bg: #ffffff;
+  --btn-secondary-border: rgba(203, 213, 225, 0.9);
+  --btn-secondary-color: #0f172a;
+  --btn-secondary-hover-bg: #f1f5f9;
+  --btn-neon-color: #ffffff;
+  --blob-opacity: 0.28;
+  --blob-blend: multiply;
 }
 
 /* Global Reset & Base Styles */
@@ -27,6 +80,7 @@ html, body {
   color: var(--text-primary);
   font-family: var(--font-body);
   scroll-behavior: smooth;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 *, *::before, *::after {
@@ -42,8 +96,9 @@ section {
 /* Typography Customizations */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  color: #ffffff;
+  color: var(--heading-color);
   letter-spacing: -0.02em;
+  transition: color 0.4s ease;
 }
 
 /* Scrollbar styling */
@@ -54,12 +109,13 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-dark);
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(0, 242, 254, 0.25) 0%, rgba(182, 0, 255, 0.25) 100%);
+  background: linear-gradient(180deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
   border-radius: 5px;
   border: 2px solid var(--bg-dark);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(0, 242, 254, 0.5) 0%, rgba(182, 0, 255, 0.5) 100%);
+  background: linear-gradient(180deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
+  opacity: 0.8;
 }
 
 /* Utility styles */
@@ -98,15 +154,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .glass-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 12px 40px 0 rgba(0, 242, 254, 0.1);
+  border-color: var(--card-hover-border);
+  box-shadow: 0 12px 40px 0 rgba(0, 242, 254, 0.12);
 }
 
 /* Glowing buttons */
 .btn-neon {
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(182, 0, 255, 0.15) 100%);
-  color: #fff;
-  border: 1px solid rgba(0, 242, 254, 0.4);
+  background: linear-gradient(135deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
+  color: #ffffff;
+  border: 1px solid var(--primary-glow);
   border-radius: 30px;
   padding: 0.75rem 2rem;
   font-weight: 600;
@@ -114,7 +170,7 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -122,10 +178,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-neon:hover {
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.3) 0%, rgba(182, 0, 255, 0.3) 100%);
-  border-color: rgba(0, 242, 254, 0.8);
-  color: #fff;
-  box-shadow: 0 0 25px rgba(0, 242, 254, 0.25), 0 0 5px rgba(182, 0, 255, 0.2);
+  background: linear-gradient(135deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
+  opacity: 0.9;
+  color: #ffffff;
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.3), 0 0 10px var(--secondary-glow);
   transform: translateY(-2px);
 }
 
@@ -150,8 +206,8 @@ h1, h2, h3, h4, h5, h6 {
 /* PrimeNG Panel Custom overrides */
 p-panel {
   .p-panel {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
     border-radius: 12px !important;
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
@@ -160,8 +216,8 @@ p-panel {
     transition: all 0.3s ease;
 
     &:hover {
-      border-color: rgba(0, 242, 254, 0.3) !important;
-      box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+      border-color: var(--primary-glow) !important;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
       transform: translateY(-2px);
     }
   }
@@ -169,7 +225,7 @@ p-panel {
   .p-panel-header {
     background: transparent !important;
     border: none !important;
-    color: #fff !important;
+    color: var(--heading-color) !important;
     padding: 1rem 1.25rem !important;
     font-family: var(--font-heading) !important;
     font-weight: 500 !important;

@@ -6,7 +6,7 @@
 .timeline-group-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--heading-color);
   
   .group-icon {
     color: var(--primary-glow);
@@ -19,7 +19,7 @@
 .timeline-container {
   position: relative;
   padding-left: 2rem;
-  border-left: 2px solid rgba(255, 255, 255, 0.05);
+  border-left: 2px solid var(--glass-border);
   margin-left: 0.5rem;
 }
 
@@ -39,7 +39,7 @@
     }
     
     .timeline-content {
-      border-color: rgba(0, 242, 254, 0.2);
+      border-color: var(--primary-glow);
     }
   }
 }
@@ -69,22 +69,25 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   padding: 0.45rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   border-radius: 30px;
+  color: var(--primary-glow);
 }
 
 .item-title {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--heading-color);
 }
 
 .item-institution {
   font-size: 0.95rem;
   font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .item-desc {
   font-size: 0.92rem;
   line-height: 1.5;
+  color: var(--text-secondary);
 }

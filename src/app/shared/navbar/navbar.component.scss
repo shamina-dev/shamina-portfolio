@@ -1,19 +1,19 @@
 .navbar {
-  background: rgba(3, 3, 8, 0.5);
+  background: var(--nav-bg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--glass-border);
   padding: 1.25rem 0;
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   z-index: 1000;
   
   &.navbar-scrolled {
-    background: rgba(3, 3, 8, 0.85);
+    background: var(--nav-scrolled-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+    border-bottom: 1px solid var(--primary-glow);
     padding: 0.75rem 0;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 30px var(--glass-shadow);
   }
 }
 
@@ -22,11 +22,11 @@
   font-weight: 700;
   font-size: 1.35rem;
   letter-spacing: -0.01em;
-  color: #ffffff !important;
-  transition: text-shadow 0.3s ease;
+  color: var(--heading-color) !important;
+  transition: text-shadow 0.3s ease, color 0.3s ease;
   
   &:hover {
-    text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+    text-shadow: 0 0 10px var(--primary-glow);
   }
   
   .brand-accent {
@@ -59,7 +59,7 @@
   }
   
   &:hover, &.active {
-    color: #ffffff !important;
+    color: var(--heading-color) !important;
     
     &::after {
       width: 100%;
@@ -67,7 +67,39 @@
   }
   
   &.active {
-    text-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+    text-shadow: 0 0 8px var(--primary-glow);
+  }
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.15rem;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  i {
+    transition: transform 0.4s ease, color 0.3s ease;
+  }
+
+  &:hover {
+    background: var(--btn-secondary-hover-bg);
+    border-color: var(--primary-glow);
+    color: var(--primary-glow);
+    transform: rotate(20deg) scale(1.08);
+    box-shadow: 0 0 15px var(--primary-glow);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 
@@ -85,7 +117,7 @@
     display: block;
     width: 22px;
     height: 2px;
-    background-color: #ffffff;
+    background-color: var(--heading-color);
     border-radius: 1px;
     transition: all 0.3s ease;
     
@@ -111,21 +143,21 @@
 /* Mobile Dropdown Styling */
 @media (max-width: 991.98px) {
   .navbar-collapse {
-    background: rgba(5, 5, 12, 0.95);
+    background: var(--nav-dropdown-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 1.5rem;
     margin-top: 1rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 10px 40px var(--glass-shadow);
   }
   
   .navbar-nav {
     .nav-link {
       margin-left: 0;
       padding: 0.75rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid var(--glass-border);
       
       &::after {
         display: none;
@@ -136,9 +168,9 @@
 
 @keyframes glow-pulse {
   0% {
-    text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
+    text-shadow: 0 0 5px var(--primary-glow);
   }
   100% {
-    text-shadow: 0 0 15px rgba(0, 242, 254, 0.7);
+    text-shadow: 0 0 15px var(--primary-glow);
   }
 }

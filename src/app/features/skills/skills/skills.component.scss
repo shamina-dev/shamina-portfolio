@@ -37,8 +37,8 @@
   background: var(--bg-dark);
   padding: 8px;
   z-index: 2;
-  border: 2px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 2px solid var(--glass-border);
+  box-shadow: 0 10px 40px var(--glass-shadow);
   overflow: hidden;
   
   &::before {
@@ -95,8 +95,8 @@
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   
   &:hover {
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    border-color: var(--card-hover-border);
+    box-shadow: 0 15px 40px var(--glass-shadow);
     
     .category-indicator {
       box-shadow: 0 0 12px var(--primary-glow);
@@ -108,16 +108,17 @@
 .category-title {
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--heading-color);
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .category-indicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--primary-glow);
   display: inline-block;
   transition: all 0.3s ease;
 }
@@ -125,14 +126,14 @@
 /* Skill Item Cards */
 .skill-item {
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.035) !important;
-    border-color: var(--skill-glow) !important;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2), 0 0 10px rgba(var(--skill-glow), 0.15);
+    background: var(--glass-bg) !important;
+    border-color: var(--primary-glow) !important;
+    box-shadow: 0 5px 20px var(--glass-shadow), 0 0 10px rgba(0, 242, 254, 0.15);
     transform: scale(1.03) translateY(-2px);
     
     .skill-icon-wrap {
@@ -156,6 +157,7 @@
 .skill-name {
   font-size: 0.95rem;
   font-weight: 600;
+  color: var(--heading-color);
 }
 
 /* Animations */

@@ -1,5 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-navbar',
@@ -12,7 +13,18 @@ export class NavbarComponent implements OnInit {
 
   sections = ['home', 'skills', 'services', 'projects', 'resume', 'contact'];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    public themeService: ThemeService
+  ) {}
+
+  get isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   ngOnInit(): void {
     // Initial check
