@@ -1,4 +1,6 @@
-import { Component, ElementRef, OnDestroy, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { ThemeService } from '../../core/services/theme.service';
+import { Subscription } from 'rxjs';
 
 interface AnimStyle {
   id: string;
@@ -58,7 +60,7 @@ const ANIMATIONS: AnimStyle[] = [
   templateUrl: './free-services.component.html',
   styleUrls: ['./free-services.component.scss']
 })
-export class FreeServicesComponent implements OnDestroy {
+export class FreeServicesComponent implements OnInit, OnDestroy {
   animations = ANIMATIONS;
   activeAnim = signal<AnimStyle | null>(null);
   speedMultiplier = signal(1.0);
@@ -76,11 +78,25 @@ export class FreeServicesComponent implements OnDestroy {
   private time = 0;
   private lastTime = 0;
   private animationFrameId?: number;
+  private themeSub?: Subscription;
 
   private resizeListener = () => this.resizeCanvas();
 
+  constructor(public themeService: ThemeService) {}
+
+  ngOnInit() {
+    this.themeSub = this.themeService.theme$.subscribe(() => {
+      if (this.activeAnim()) {
+        this.populateEntities();
+      }
+    });
+  }
+
   ngOnDestroy() {
     this.stopAnimation();
+    if (this.themeSub) {
+      this.themeSub.unsubscribe();
+    }
   }
 
   selectAnimation(anim: AnimStyle) {
@@ -134,6 +150,7 @@ export class FreeServicesComponent implements OnDestroy {
     this.entities = [];
     const styleId = this.activeAnim()?.id;
     const isMobile = window.innerWidth < 768;
+    const isDark = this.themeService.isDarkMode();
 
     if (styleId === 'network') {
       const count = isMobile ? 40 : 100;
@@ -149,21 +166,28 @@ export class FreeServicesComponent implements OnDestroy {
     } 
     else if (styleId === 'gradient') {
       const maxDim = Math.max(this.width, this.height);
+      const color1 = isDark ? [0, 242, 254] : [2, 132, 199];
+      const color2 = isDark ? [182, 0, 255] : [139, 92, 246];
+      const color3 = isDark ? [0, 255, 196] : [13, 148, 136];
+
       this.entities = [
-        { x: this.width * 0.2, y: this.height * 0.3, vx: 0.3, vy: 0.4, r: maxDim * 0.6, color: [0, 242, 254] },
-        { x: this.width * 0.8, y: this.height * 0.7, vx: -0.4, vy: -0.3, r: maxDim * 0.7, color: [182, 0, 255] },
-        { x: this.width * 0.5, y: this.height * 0.5, vx: 0.5, vy: -0.5, r: maxDim * 0.5, color: [0, 255, 196] }
+        { x: this.width * 0.2, y: this.height * 0.3, vx: 0.3, vy: 0.4, r: maxDim * 0.6, color: color1 },
+        { x: this.width * 0.8, y: this.height * 0.7, vx: -0.4, vy: -0.3, r: maxDim * 0.7, color: color2 },
+        { x: this.width * 0.5, y: this.height * 0.5, vx: 0.5, vy: -0.5, r: maxDim * 0.5, color: color3 }
       ];
     } 
     else if (styleId === 'ribbons') {
       for(let i = 0; i < 5; i++) {
+        const hue = isDark ? (180 + i * 25) : (200 + i * 25);
+        const lightness = isDark ? 55 : 45;
+        const alpha = isDark ? 0.12 : 0.18;
         this.entities.push({
           yOffset: this.height * (0.2 + (i * 0.15)),
           amplitude: this.random(55, 180),
           frequency: this.random(0.001, 0.0035),
           speed: this.random(0.4, 1.2),
           phase: this.random(0, Math.PI * 2),
-          color: `hsla(${180 + i * 25}, 85%, 55%, 0.12)`
+          color: `hsla(${hue}, 85%, ${lightness}%, ${alpha})`
         });
       }
     } 
@@ -212,17 +236,22 @@ export class FreeServicesComponent implements OnDestroy {
 
     const styleId = this.activeAnim()?.id;
     const speed = this.speedMultiplier();
+    const isDark = this.themeService.isDarkMode();
 
+    // Background fill based on theme
     if (styleId === 'flowfield') {
-      this.ctx.fillStyle = `rgba(3, 3, 8, 0.12)`;
+      this.ctx.fillStyle = isDark ? `rgba(3, 3, 8, 0.12)` : `rgba(248, 250, 252, 0.18)`;
       this.ctx.fillRect(0, 0, this.width, this.height);
     } else {
-      this.ctx.fillStyle = '#030308';
+      this.ctx.fillStyle = isDark ? '#030308' : '#f8fafc';
       this.ctx.fillRect(0, 0, this.width, this.height);
     }
 
     if (styleId === 'network') {
-      this.ctx.fillStyle = 'rgba(0, 242, 254, 0.5)';
+      const nodeColor = isDark ? 'rgba(0, 242, 254, 0.6)' : 'rgba(2, 132, 199, 0.7)';
+      const strokeColor = isDark ? 'rgba(0, 242, 254,' : 'rgba(2, 132, 199,';
+      
+      this.ctx.fillStyle = nodeColor;
       
       this.entities.forEach(p => {
         p.x! += p.vx! * speed * (dt * 60);
@@ -243,10 +272,11 @@ export class FreeServicesComponent implements OnDestroy {
           const dist = Math.sqrt(dx*dx + dy*dy);
 
           if (dist < 130) {
+            const alphaMult = isDark ? 0.25 : 0.35;
             this.ctx.beginPath();
             this.ctx.moveTo(this.entities[i].x!, this.entities[i].y!);
             this.ctx.lineTo(this.entities[j].x!, this.entities[j].y!);
-            this.ctx.strokeStyle = `rgba(0, 242, 254, ${(1 - dist/130) * 0.25})`;
+            this.ctx.strokeStyle = `${strokeColor} ${(1 - dist/130) * alphaMult})`;
             this.ctx.lineWidth = 0.8;
             this.ctx.stroke();
           }
@@ -254,6 +284,7 @@ export class FreeServicesComponent implements OnDestroy {
       }
     } 
     else if (styleId === 'gradient') {
+      const alphaCenter = isDark ? 0.25 : 0.35;
       this.entities.forEach(orb => {
         orb.x! += orb.vx! * speed * (dt * 60);
         orb.y! += orb.vy! * speed * (dt * 60);
@@ -263,7 +294,7 @@ export class FreeServicesComponent implements OnDestroy {
 
         const color = orb.color as number[];
         const gradient = this.ctx!.createRadialGradient(orb.x!, orb.y!, 0, orb.x!, orb.y!, orb.r!);
-        gradient.addColorStop(0, `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.25)`);
+        gradient.addColorStop(0, `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alphaCenter})`);
         gradient.addColorStop(1, `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0)`);
         
         this.ctx!.fillStyle = gradient;
@@ -290,7 +321,7 @@ export class FreeServicesComponent implements OnDestroy {
       });
     } 
     else if (styleId === 'isometric') {
-      this.ctx.strokeStyle = 'rgba(182, 0, 255, 0.35)';
+      this.ctx.strokeStyle = isDark ? 'rgba(182, 0, 255, 0.35)' : 'rgba(139, 92, 246, 0.45)';
       this.ctx.lineWidth = 1.2;
 
       this.entities.forEach(shape => {
@@ -315,7 +346,7 @@ export class FreeServicesComponent implements OnDestroy {
       });
     } 
     else if (styleId === 'flowfield') {
-      this.ctx.fillStyle = 'rgba(0, 242, 254, 0.7)';
+      this.ctx.fillStyle = isDark ? 'rgba(0, 242, 254, 0.7)' : 'rgba(2, 132, 199, 0.75)';
       const t = this.time * 0.4 * speed;
 
       this.entities.forEach(p => {
@@ -374,6 +405,14 @@ export class FreeServicesComponent implements OnDestroy {
   }
 
   private getAnimationCode(id: string): string {
+    const isDark = this.themeService.isDarkMode();
+    const bgColor = isDark ? '#030308' : '#f8fafc';
+    const textColor = isDark ? '#ffffff' : '#0f172a';
+    const subtextColor = isDark ? '#a1a1aa' : '#64748b';
+    const cardBg = isDark ? 'rgba(15, 15, 25, 0.75)' : 'rgba(255, 255, 255, 0.85)';
+    const cardBorder = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(203, 213, 225, 0.8)';
+    const primaryGlow = isDark ? '#00f2fe' : '#0284c7';
+
     const drawingScripts: Record<string, string> = {
       network: `
     // --- Simulation Setup ---
@@ -392,11 +431,11 @@ export class FreeServicesComponent implements OnDestroy {
     
     // --- Render Loop ---
     function draw(dt) {
-      ctx.fillStyle = '#030308';
+      ctx.fillStyle = '${bgColor}';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Draw Particles
-      ctx.fillStyle = 'rgba(0, 242, 254, 0.5)';
+      ctx.fillStyle = '${isDark ? "rgba(0, 242, 254, 0.6)" : "rgba(2, 132, 199, 0.7)"}';
       particles.forEach(p => {
         p.x += p.vx * speedMultiplier;
         p.y += p.vy * speedMultiplier;
@@ -410,6 +449,8 @@ export class FreeServicesComponent implements OnDestroy {
       });
       
       // Draw Connecting Lines
+      const baseRgb = '${isDark ? "0, 242, 254" : "2, 132, 199"}';
+      const alphaMult = ${isDark ? 0.25 : 0.35};
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -420,7 +461,7 @@ export class FreeServicesComponent implements OnDestroy {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = \`rgba(0, 242, 254, \${(1 - dist/130) * 0.25})\`;
+            ctx.strokeStyle = \`rgba(\${baseRgb}, \${((1 - dist/130) * alphaMult).toFixed(3)})\`;
             ctx.lineWidth = 0.8;
             ctx.stroke();
           }
@@ -430,7 +471,7 @@ export class FreeServicesComponent implements OnDestroy {
       gradient: `
     // --- Simulation Setup ---
     const orbs = [];
-    const colors = [[0, 242, 254], [182, 0, 255], [0, 255, 196]];
+    const colors = ${isDark ? "[[0, 242, 254], [182, 0, 255], [0, 255, 196]]" : "[[2, 132, 199], [139, 92, 246], [13, 148, 136]]"};
     const maxDim = Math.max(canvas.width, canvas.height);
     
     orbs.push({ x: canvas.width * 0.2, y: canvas.height * 0.3, vx: 0.3, vy: 0.4, r: maxDim * 0.6, color: colors[0] });
@@ -439,7 +480,7 @@ export class FreeServicesComponent implements OnDestroy {
     
     // --- Render Loop ---
     function draw(dt) {
-      ctx.fillStyle = '#030308';
+      ctx.fillStyle = '${bgColor}';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       orbs.forEach(orb => {
@@ -450,7 +491,7 @@ export class FreeServicesComponent implements OnDestroy {
         if (orb.y < -canvas.height * 0.2 || orb.y > canvas.height * 1.2) orb.vy *= -1;
         
         const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
-        gradient.addColorStop(0, \`rgba(\${orb.color[0]}, \${orb.color[1]}, \${orb.color[2]}, 0.25)\`);
+        gradient.addColorStop(0, \`rgba(\${orb.color[0]}, \${orb.color[1]}, \${orb.color[2]}, ${isDark ? 0.25 : 0.35})\`);
         gradient.addColorStop(1, \`rgba(\${orb.color[0]}, \${orb.color[1]}, \${orb.color[2]}, 0)\`);
         
         ctx.fillStyle = gradient;
@@ -462,21 +503,24 @@ export class FreeServicesComponent implements OnDestroy {
       ribbons: `
     // --- Simulation Setup ---
     const ribbons = [];
-    for(let i = 0; i < 5; i++) {
+    const baseHue = ${isDark ? 180 : 200};
+    const lightness = ${isDark ? 55 : 45};
+    const alpha = ${isDark ? 0.12 : 0.18};
+    for (let i = 0; i < 5; i++) {
       ribbons.push({
         yOffset: canvas.height * (0.2 + (i * 0.15)),
         amplitude: Math.random() * 125 + 55,
         frequency: Math.random() * 0.0025 + 0.001,
         speed: Math.random() * 0.8 + 0.4,
         phase: Math.random() * Math.PI * 2,
-        color: \`hsla(\${180 + i * 25}, 85%, 55%, 0.12)\`
+        color: \`hsla(\${baseHue + i * 25}, 85%, \${lightness}%, \${alpha})\`
       });
     }
     
     // --- Render Loop ---
     let time = 0;
     function draw(dt) {
-      ctx.fillStyle = '#030308';
+      ctx.fillStyle = '${bgColor}';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       time += dt;
       
@@ -514,9 +558,9 @@ export class FreeServicesComponent implements OnDestroy {
     
     // --- Render Loop ---
     function draw(dt) {
-      ctx.fillStyle = '#030308';
+      ctx.fillStyle = '${bgColor}';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = 'rgba(182, 0, 255, 0.35)';
+      ctx.strokeStyle = '${isDark ? "rgba(182, 0, 255, 0.35)" : "rgba(139, 92, 246, 0.45)"}';
       ctx.lineWidth = 1.2;
       
       shapes.forEach(shape => {
@@ -558,11 +602,11 @@ export class FreeServicesComponent implements OnDestroy {
     let time = 0;
     function draw(dt) {
       // Leave slight trail
-      ctx.fillStyle = 'rgba(3, 3, 8, 0.12)';
+      ctx.fillStyle = '${isDark ? "rgba(3, 3, 8, 0.12)" : "rgba(248, 250, 252, 0.18)"}';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       time += dt;
       
-      ctx.fillStyle = 'rgba(0, 242, 254, 0.7)';
+      ctx.fillStyle = '${isDark ? "rgba(0, 242, 254, 0.7)" : "rgba(2, 132, 199, 0.75)"}';
       const t = time * 0.4 * speedMultiplier;
       
       particles.forEach(p => {
@@ -597,7 +641,7 @@ export class FreeServicesComponent implements OnDestroy {
       margin: 0; padding: 0;
       width: 100%; height: 100%;
       overflow: hidden;
-      background-color: #030308;
+      background-color: ${bgColor};
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
     canvas {
@@ -609,26 +653,26 @@ export class FreeServicesComponent implements OnDestroy {
       position: absolute;
       bottom: 24px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 15, 25, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: ${cardBg};
+      border: 1px solid ${cardBorder};
       backdrop-filter: blur(16px);
       border-radius: 20px;
       padding: 16px 24px;
       z-index: 10;
-      color: #fff;
+      color: ${textColor};
       display: flex;
       align-items: center;
       gap: 20px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     }
     .slider-container {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    label { font-size: 14px; font-weight: 500; color: #a1a1aa; }
+    label { font-size: 14px; font-weight: 500; color: ${subtextColor}; }
     input[type=range] {
-      accent-color: #00f2fe;
+      accent-color: ${primaryGlow};
       width: 150px;
       cursor: pointer;
     }
@@ -640,10 +684,10 @@ export class FreeServicesComponent implements OnDestroy {
 
   <div class="overlay-controls">
     <div style="text-align: left;">
-      <h4 style="margin: 0; font-size: 16px; font-weight: 700;">${this.activeAnim()?.name}</h4>
-      <p style="margin: 0; font-size: 11px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em;">Interactive Ambient Background</p>
+      <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: ${textColor}">${this.activeAnim()?.name}</h4>
+      <p style="margin: 0; font-size: 11px; color: ${subtextColor}; text-transform: uppercase; letter-spacing: 0.05em;">Interactive Ambient Background</p>
     </div>
-    <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.15)"></div>
+    <div style="width: 1px; height: 30px; background: ${cardBorder}"></div>
     <div class="slider-container">
       <label for="speed">Speed: <span id="speedVal">1.0x</span></label>
       <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1">

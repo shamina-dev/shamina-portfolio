@@ -9,7 +9,7 @@
   --bg-dark: #030308;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-muted: #cbd5e1;
   --heading-color: #ffffff;
   --glass-bg: rgba(255, 255, 255, 0.02);
   --glass-border: rgba(255, 255, 255, 0.06);
@@ -68,6 +68,16 @@
   --btn-neon-color: #ffffff;
   --blob-opacity: 0.28;
   --blob-blend: multiply;
+}
+
+/* Override Bootstrap text-muted utility */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* Override Bootstrap text-white utility to adapt to light/dark themes */
+.text-white {
+  color: var(--heading-color) !important;
 }
 
 /* Global Reset & Base Styles */
