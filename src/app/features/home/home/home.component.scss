@@ -1,7 +1,7 @@
 .hero-container {
   min-height: 90vh;
-  padding-top: 8rem;
-  padding-bottom: 4rem;
+  padding-top: 8rem !important;
+  padding-bottom: 4rem !important;
   position: relative;
 }
 
@@ -20,7 +20,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   box-shadow: 0 0 15px rgba(0, 242, 254, 0.05);
-  
+
   .badge-dot {
     width: 8px;
     height: 8px;
@@ -38,7 +38,7 @@
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.03em;
-  
+
   @media (max-width: 768px) {
     font-size: 2.8rem;
   }
@@ -48,16 +48,16 @@
   font-size: 1.8rem;
   font-weight: 500;
   color: var(--heading-color);
-  
+
   @media (max-width: 768px) {
     font-size: 1.4rem;
   }
-  
+
   .role {
     font-weight: 700;
     position: relative;
   }
-  
+
   .cursor-blink {
     font-weight: 100;
     color: var(--primary-glow);
@@ -91,7 +91,7 @@
   text-decoration: none;
   font-size: 1.25rem;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
+
   &:hover {
     color: var(--primary-glow);
     background: var(--btn-secondary-hover-bg);
@@ -117,17 +117,17 @@
   align-items: center;
   gap: 10px;
   box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-  
+
   .icon {
     transition: transform 0.3s ease;
   }
-  
+
   &:hover {
     background: var(--secondary-glow);
     color: #ffffff;
     box-shadow: 0 0 25px var(--secondary-glow);
     transform: translateY(-2px);
-    
+
     .icon {
       transform: translateY(2px);
     }
@@ -147,18 +147,18 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  
+
   i {
     transition: transform 0.3s ease;
     font-size: 0.85rem;
   }
-  
+
   &:hover {
     background: var(--btn-secondary-hover-bg);
     border-color: var(--primary-glow);
     color: var(--primary-glow);
     transform: translateY(-2px);
-    
+
     i {
       transform: translateX(4px);
     }
@@ -170,23 +170,23 @@
   border-radius: 16px;
   border: 1px solid var(--terminal-border);
   box-shadow: 0 20px 50px var(--glass-shadow);
-  
+
   .terminal-header {
     background: var(--terminal-header-bg);
     border-bottom: 1px solid var(--terminal-border);
     padding: 0.75rem 1.25rem;
-    
+
     .dot {
       width: 12px;
       height: 12px;
       border-radius: 50%;
       display: inline-block;
-      
+
       &.red { background-color: #ef4444; }
       &.yellow { background-color: #f59e0b; }
       &.green { background-color: #10b981; }
     }
-    
+
     .window-title {
       font-size: 0.85rem;
       font-family: var(--font-heading);
@@ -194,7 +194,7 @@
       color: #94a3b8;
     }
   }
-  
+
   .terminal-body {
     padding: 1.5rem;
     font-family: 'Courier New', Courier, monospace;
@@ -202,11 +202,11 @@
     line-height: 1.5;
     background: var(--terminal-bg);
     overflow-x: auto;
-    
+
     .code-lines {
       margin: 0;
     }
-    
+
     .line-num {
       color: var(--text-muted);
       margin-right: 1.25rem;
@@ -215,7 +215,7 @@
       width: 15px;
       text-align: right;
     }
-    
+
     /* Token syntax styles */
     .token {
       &.keyword { color: #ff79c6; font-weight: 600; }
@@ -244,13 +244,13 @@
   box-shadow: 0 10px 30px var(--glass-shadow);
   animation: floating 4s infinite ease-in-out;
   max-width: 260px;
-  
+
   @media (max-width: 991.98px) {
     position: static;
     margin-top: 1.5rem;
     max-width: 100%;
   }
-  
+
   .icon-wrap {
     background: rgba(0, 242, 254, 0.1);
     color: var(--primary-glow);
@@ -262,14 +262,14 @@
     justify-content: center;
     font-size: 1.2rem;
   }
-  
+
   .card-label {
     font-size: 0.7rem;
     color: var(--text-muted);
     font-weight: 700;
     letter-spacing: 0.1em;
   }
-  
+
   .card-value {
     font-size: 0.85rem;
     font-weight: 600;
