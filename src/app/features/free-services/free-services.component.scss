@@ -29,6 +29,7 @@
 .anim-title {
   font-size: 1.35rem;
   font-weight: 600;
+  color: var(--heading-color);
 }
 
 .anim-desc {
@@ -37,7 +38,7 @@
 }
 
 .border-top-glass {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--glass-border);
 }
 
 .arrow-icon {
@@ -70,12 +71,12 @@
 
 /* HUD Buttons */
 .btn-hud {
-  background: rgba(15, 15, 25, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 30px;
-  color: #a1a1aa;
+  color: var(--text-primary);
   padding: 0.75rem 1.5rem;
   font-size: 0.9rem;
   font-weight: 600;
@@ -84,28 +85,28 @@
   margin-top: 45px;
 
   &:hover {
-    color: #ffffff;
-    background: rgba(20, 20, 35, 0.9);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    color: var(--heading-color);
+    background: var(--card-bg);
+    border-color: var(--primary-glow);
+    box-shadow: 0 5px 15px var(--glass-shadow);
     transform: translateY(-1px);
   }
 }
 
 /* Control HUD Box */
 .control-box {
-  background: rgba(15, 15, 25, 0.75) !important;
+  background: var(--glass-bg) !important;
   border-radius: 24px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--glass-border) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 15px 40px var(--glass-shadow) !important;
 }
 
 .active-anim-name {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--heading-color);
 }
 
 .active-anim-tag {
@@ -118,19 +119,20 @@
 .panel-divider {
   width: 1px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--glass-border);
 }
 
 .slider-label {
   font-size: 0.85rem;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 /* Speed Slider Styling */
 .speed-slider {
   width: 160px;
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-border);
   border-radius: 10px;
   outline: none;
 
@@ -156,7 +158,7 @@
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw; height: 100vh;
-  background: rgba(3, 3, 8, 0.85);
+  background: rgba(3, 3, 8, 0.75);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   z-index: 1010;
@@ -165,10 +167,10 @@
 
 .code-modal-card {
   border-radius: 24px !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 25px 60px var(--glass-shadow) !important;
   animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  background: rgba(10, 10, 20, 0.9) !important;
+  background: var(--card-bg) !important;
   backdrop-filter: blur(25px) !important;
   -webkit-backdrop-filter: blur(25px) !important;
 }
@@ -177,8 +179,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -187,8 +189,8 @@
   transition: all 0.3s ease;
 
   &:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--heading-color);
+    background: var(--btn-secondary-hover-bg);
     transform: rotate(90deg);
   }
 }
@@ -196,13 +198,13 @@
 .code-box-wrapper {
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
 }
 
 .code-snippet-box {
   margin: 0;
   padding: 1.5rem;
-  background: #060913;
+  background: var(--terminal-bg);
   max-height: 380px;
   overflow-y: auto;
   font-family: 'Courier New', Courier, monospace;
@@ -216,7 +218,7 @@
     height: 8px;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--glass-border);
     border-radius: 4px;
     border: none;
   }
@@ -226,21 +228,21 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
   backdrop-filter: blur(4px);
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: #0f172a;
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    background: var(--btn-secondary-hover-bg);
+    border-color: var(--primary-glow);
+    color: var(--primary-glow);
   }
 
   &.copied {
@@ -270,10 +272,10 @@
   max-width: 420px;
   width: 90%;
   border-radius: 24px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 20px 50px var(--glass-shadow) !important;
   animation: slideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  background: rgba(10, 10, 20, 0.4) !important;
+  background: var(--glass-bg) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
 }
@@ -282,7 +284,8 @@
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  color: var(--heading-color);
+  text-shadow: 0 0 10px var(--primary-glow);
 }
 
 .brand-title {
@@ -299,18 +302,18 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 1.15rem;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover {
-    color: #ffffff;
-    background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(182, 0, 255, 0.2) 100%);
-    border-color: rgba(0, 242, 254, 0.6);
-    box-shadow: 0 0 15px rgba(0, 242, 254, 0.35);
+    color: var(--primary-glow);
+    background: var(--btn-secondary-hover-bg);
+    border-color: var(--primary-glow);
+    box-shadow: 0 0 15px var(--primary-glow);
     transform: translateY(-4px) scale(1.05);
   }
 }

@@ -1,4 +1,6 @@
 import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
+import { ThemeService } from '../../core/services/theme.service';
+import { Subscription } from 'rxjs';
 
 interface Particle {
   x: number;
@@ -20,6 +22,7 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
   private ctx!: CanvasRenderingContext2D | null;
   private particles: Particle[] = [];
   private animationFrameId: number | null = null;
+  private themeSub!: Subscription;
   
   mouseX: number = 0;
   mouseY: number = 0;
@@ -29,7 +32,7 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
   private connectionDistance: number = 110;
   private mouseConnectionDistance: number = 160;
 
-  constructor() {}
+  constructor(public themeService: ThemeService) {}
 
   ngOnInit(): void {}
 
@@ -39,11 +42,18 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resizeCanvas();
     this.initParticles();
     this.animate();
+
+    this.themeSub = this.themeService.theme$.subscribe(() => {
+      // Trigger re-render adjustments on theme toggle if needed
+    });
   }
 
   ngOnDestroy(): void {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
+    }
+    if (this.themeSub) {
+      this.themeSub.unsubscribe();
     }
   }
 
@@ -70,7 +80,6 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // Adjust density based on screen size
     const area = canvas.width * canvas.height;
     this.maxParticles = Math.floor(area / 18000);
     if (this.maxParticles > 120) this.maxParticles = 120;
@@ -100,7 +109,6 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
     const canvas = this.canvasRef.nativeElement;
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw connections and update particles
     this.drawConnections();
     this.drawParticles();
     
@@ -111,13 +119,12 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.ctx) return;
     
     const canvas = this.canvasRef.nativeElement;
+    const isDark = this.themeService.isDarkMode();
     
     this.particles.forEach(p => {
-      // Move particles
       p.x += p.vx;
       p.y += p.vy;
       
-      // Repel from mouse
       if (this.isMouseOver) {
         const dx = p.x - this.mouseX;
         const dy = p.y - this.mouseY;
@@ -126,13 +133,10 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
         if (dist < 120) {
           const force = (120 - dist) / 120;
           const angle = Math.atan2(dy, dx);
-          // Apply pushing force
           p.x += Math.cos(angle) * force * 1.5;
           p.y += Math.sin(angle) * force * 1.5;
-          // Temporarily swell the particle size on interaction
           p.size = p.baseSize * (1 + force * 0.8);
         } else {
-          // Gently return to normal size
           if (p.size > p.baseSize) {
             p.size -= 0.05;
           }
@@ -143,26 +147,22 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
       
-      // Boundary collision checks (bounce back)
       if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
       if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
       
-      // Clamping inside window just in case
       if (p.x < 0) p.x = 0;
       if (p.x > canvas.width) p.x = canvas.width;
       if (p.y < 0) p.y = 0;
       if (p.y > canvas.height) p.y = canvas.height;
       
-      // Draw individual particle
       this.ctx!.beginPath();
       this.ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      this.ctx!.fillStyle = 'rgba(0, 180, 255, 0.4)';
+      this.ctx!.fillStyle = isDark ? 'rgba(0, 180, 255, 0.4)' : 'rgba(2, 132, 199, 0.55)';
       this.ctx!.shadowBlur = p.size > p.baseSize ? 6 : 0;
-      this.ctx!.shadowColor = '#00f2fe';
+      this.ctx!.shadowColor = isDark ? '#00f2fe' : '#0284c7';
       this.ctx!.fill();
     });
     
-    // Reset shadow for performance
     this.ctx.shadowBlur = 0;
   }
 
@@ -170,10 +170,11 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.ctx) return;
     
     const count = this.particles.length;
+    const isDark = this.themeService.isDarkMode();
+
     for (let i = 0; i < count; i++) {
       const p1 = this.particles[i];
       
-      // Line connecting to other particles
       for (let j = i + 1; j < count; j++) {
         const p2 = this.particles[j];
         
@@ -182,15 +183,20 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (dist < this.connectionDistance) {
-          const alpha = (1 - dist / this.connectionDistance) * 0.15;
+          const alphaMultiplier = isDark ? 0.15 : 0.25;
+          const alpha = (1 - dist / this.connectionDistance) * alphaMultiplier;
           this.ctx.beginPath();
           this.ctx.moveTo(p1.x, p1.y);
           this.ctx.lineTo(p2.x, p2.y);
           
-          // Gradient between connection points
           const grad = this.ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-          grad.addColorStop(0, `rgba(0, 242, 254, ${alpha})`);
-          grad.addColorStop(1, `rgba(182, 0, 255, ${alpha})`);
+          if (isDark) {
+            grad.addColorStop(0, `rgba(0, 242, 254, ${alpha})`);
+            grad.addColorStop(1, `rgba(182, 0, 255, ${alpha})`);
+          } else {
+            grad.addColorStop(0, `rgba(2, 132, 199, ${alpha})`);
+            grad.addColorStop(1, `rgba(139, 92, 246, ${alpha})`);
+          }
           
           this.ctx.strokeStyle = grad;
           this.ctx.lineWidth = 0.8;
@@ -198,22 +204,26 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
       
-      // Mouse cursor connections
       if (this.isMouseOver) {
         const dx = p1.x - this.mouseX;
         const dy = p1.y - this.mouseY;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (dist < this.mouseConnectionDistance) {
-          const alpha = (1 - dist / this.mouseConnectionDistance) * 0.28;
+          const alphaMultiplier = isDark ? 0.28 : 0.38;
+          const alpha = (1 - dist / this.mouseConnectionDistance) * alphaMultiplier;
           this.ctx.beginPath();
           this.ctx.moveTo(p1.x, p1.y);
           this.ctx.lineTo(this.mouseX, this.mouseY);
           
-          // Cyan to purple gradient towards cursor
           const grad = this.ctx.createLinearGradient(p1.x, p1.y, this.mouseX, this.mouseY);
-          grad.addColorStop(0, `rgba(0, 242, 254, ${alpha})`);
-          grad.addColorStop(1, `rgba(182, 0, 255, ${alpha * 0.3})`);
+          if (isDark) {
+            grad.addColorStop(0, `rgba(0, 242, 254, ${alpha})`);
+            grad.addColorStop(1, `rgba(182, 0, 255, ${alpha * 0.3})`);
+          } else {
+            grad.addColorStop(0, `rgba(2, 132, 199, ${alpha})`);
+            grad.addColorStop(1, `rgba(139, 92, 246, ${alpha * 0.3})`);
+          }
           
           this.ctx.strokeStyle = grad;
           this.ctx.lineWidth = 1.1;

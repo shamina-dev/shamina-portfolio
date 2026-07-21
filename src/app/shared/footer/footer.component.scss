@@ -1,6 +1,6 @@
 .footer {
-  background: rgba(3, 3, 8, 0.4);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg);
+  border-top: 1px solid var(--glass-border);
   position: relative;
   z-index: 5;
 }
@@ -18,18 +18,18 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 1.2rem;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   
   &:hover {
-    color: #ffffff;
-    background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(182, 0, 255, 0.2) 100%);
-    border-color: rgba(0, 242, 254, 0.6);
-    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+    color: var(--primary-glow);
+    background: var(--btn-secondary-hover-bg);
+    border-color: var(--primary-glow);
+    box-shadow: 0 0 15px var(--primary-glow);
     transform: translateY(-4px) scale(1.05);
   }
 }
@@ -43,6 +43,7 @@
 
 .made-with {
   font-size: 0.85rem;
+  color: var(--text-secondary);
   
   .heart-icon {
     color: #ef4444;
@@ -57,8 +58,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(0, 242, 254, 0.1);
-  border: 1px solid rgba(0, 242, 254, 0.3);
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
   color: var(--primary-glow);
   display: inline-flex;
   align-items: center;
@@ -69,8 +70,9 @@
   
   &:hover {
     background: var(--primary-glow);
-    color: #030308;
-    box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+    color: #ffffff;
+    border-color: var(--primary-glow);
+    box-shadow: 0 0 20px var(--primary-glow);
     transform: translateY(-3px);
   }
   

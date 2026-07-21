@@ -1,7 +1,7 @@
 .hero-container {
   min-height: 90vh;
-  padding-top: 8rem;
-  padding-bottom: 4rem;
+  padding-top: 8rem !important;
+  padding-bottom: 4rem !important;
   position: relative;
 }
 
@@ -20,7 +20,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   box-shadow: 0 0 15px rgba(0, 242, 254, 0.05);
-  
+
   .badge-dot {
     width: 8px;
     height: 8px;
@@ -38,7 +38,7 @@
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.03em;
-  
+
   @media (max-width: 768px) {
     font-size: 2.8rem;
   }
@@ -47,17 +47,17 @@
 .hero-subtitle {
   font-size: 1.8rem;
   font-weight: 500;
-  color: #ffffff;
-  
+  color: var(--heading-color);
+
   @media (max-width: 768px) {
     font-size: 1.4rem;
   }
-  
+
   .role {
     font-weight: 700;
     position: relative;
   }
-  
+
   .cursor-blink {
     font-weight: 100;
     color: var(--primary-glow);
@@ -85,17 +85,17 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 1.25rem;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
+
   &:hover {
-    color: #ffffff;
-    background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(182, 0, 255, 0.15) 100%);
-    border-color: rgba(0, 242, 254, 0.5);
+    color: var(--primary-glow);
+    background: var(--btn-secondary-hover-bg);
+    border-color: var(--primary-glow);
     box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
     transform: translateY(-4px) scale(1.05);
   }
@@ -104,7 +104,7 @@
 /* CTA Buttons */
 .download-btn {
   background: var(--primary-glow);
-  color: #030308;
+  color: #ffffff;
   font-weight: 700;
   font-size: 0.95rem;
   border: none;
@@ -117,17 +117,17 @@
   align-items: center;
   gap: 10px;
   box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-  
+
   .icon {
     transition: transform 0.3s ease;
   }
-  
+
   &:hover {
-    background: #ffffff;
-    color: #030308;
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+    background: var(--secondary-glow);
+    color: #ffffff;
+    box-shadow: 0 0 25px var(--secondary-glow);
     transform: translateY(-2px);
-    
+
     .icon {
       transform: translateY(2px);
     }
@@ -135,9 +135,9 @@
 }
 
 .btn-neon-secondary {
-  background: rgba(255, 255, 255, 0.02);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-color);
+  border: 1px solid var(--btn-secondary-border);
   border-radius: 30px;
   padding: 0.8rem 2rem;
   font-weight: 600;
@@ -147,18 +147,18 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  
+
   i {
     transition: transform 0.3s ease;
     font-size: 0.85rem;
   }
-  
+
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
+    background: var(--btn-secondary-hover-bg);
+    border-color: var(--primary-glow);
+    color: var(--primary-glow);
     transform: translateY(-2px);
-    
+
     i {
       transform: translateX(4px);
     }
@@ -168,44 +168,45 @@
 /* Code IDE Terminal Card */
 .terminal-card {
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-  
+  border: 1px solid var(--terminal-border);
+  box-shadow: 0 20px 50px var(--glass-shadow);
+
   .terminal-header {
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--terminal-header-bg);
+    border-bottom: 1px solid var(--terminal-border);
     padding: 0.75rem 1.25rem;
-    
+
     .dot {
       width: 12px;
       height: 12px;
       border-radius: 50%;
       display: inline-block;
-      
+
       &.red { background-color: #ef4444; }
       &.yellow { background-color: #f59e0b; }
       &.green { background-color: #10b981; }
     }
-    
+
     .window-title {
       font-size: 0.85rem;
       font-family: var(--font-heading);
       letter-spacing: 0.05em;
+      color: #94a3b8;
     }
   }
-  
+
   .terminal-body {
     padding: 1.5rem;
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9rem;
     line-height: 1.5;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--terminal-bg);
     overflow-x: auto;
-    
+
     .code-lines {
       margin: 0;
     }
-    
+
     .line-num {
       color: var(--text-muted);
       margin-right: 1.25rem;
@@ -214,7 +215,7 @@
       width: 15px;
       text-align: right;
     }
-    
+
     /* Token syntax styles */
     .token {
       &.keyword { color: #ff79c6; font-weight: 600; }
@@ -236,18 +237,20 @@
   left: -30px;
   padding: 1rem 1.25rem;
   border-radius: 12px;
-  background: rgba(3, 3, 8, 0.6);
-  border: 1px solid rgba(0, 242, 254, 0.25);
-  box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--primary-glow);
+  box-shadow: 0 10px 30px var(--glass-shadow);
   animation: floating 4s infinite ease-in-out;
   max-width: 260px;
-  
+
   @media (max-width: 991.98px) {
     position: static;
     margin-top: 1.5rem;
     max-width: 100%;
   }
-  
+
   .icon-wrap {
     background: rgba(0, 242, 254, 0.1);
     color: var(--primary-glow);
@@ -259,18 +262,18 @@
     justify-content: center;
     font-size: 1.2rem;
   }
-  
+
   .card-label {
     font-size: 0.7rem;
     color: var(--text-muted);
     font-weight: 700;
     letter-spacing: 0.1em;
   }
-  
+
   .card-value {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--heading-color);
   }
 }
 
