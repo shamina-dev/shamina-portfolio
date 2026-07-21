@@ -1,0 +1,94 @@
+.contact-section {
+  position: relative;
+  z-index: 5;
+}
+
+.contact-card {
+  border-radius: 24px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Floating Label Form Controls */
+.form-group {
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 1.1rem 1.2rem;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.025);
+  }
+  
+  &:focus {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: transparent;
+    
+    ~ .focus-border {
+      width: 100%;
+    }
+  }
+}
+
+.form-textarea {
+  resize: none;
+}
+
+/* Floating Label Animation */
+.form-label {
+  position: absolute;
+  left: 1.2rem;
+  top: 1.1rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* Slide Label up on Focus or when containing text */
+.form-input:focus ~ .form-label,
+.form-input:not(:placeholder-shown) ~ .form-label {
+  transform: translateY(-2.2rem) translateX(-0.5rem) scale(0.85);
+  color: var(--primary-glow);
+  font-weight: 600;
+  text-shadow: 0 0 5px rgba(0, 242, 254, 0.2);
+}
+
+/* Underline Glow Border */
+.focus-border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+  transition: width 0.4s ease;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Submit Button Override */
+.btn-neon {
+  &:disabled {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-muted) !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: not-allowed;
+    
+    i {
+      opacity: 0.5;
+    }
+  }
+}

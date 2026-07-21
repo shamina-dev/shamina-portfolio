@@ -1,0 +1,97 @@
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -10;
+  overflow: hidden;
+  background-color: #030308;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(8, 6, 24, 0.5) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(4, 8, 30, 0.5) 0px, transparent 50%);
+  pointer-events: none;
+}
+
+.particle-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.12;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+
+.blob-1 {
+  width: 60vmax;
+  height: 60vmax;
+  background: radial-gradient(circle, #0056ff 0%, rgba(0, 86, 255, 0) 70%);
+  top: -20%;
+  left: -10%;
+  animation: float-blob-1 25s infinite alternate ease-in-out;
+}
+
+.blob-2 {
+  width: 55vmax;
+  height: 55vmax;
+  background: radial-gradient(circle, #b600ff 0%, rgba(182, 0, 255, 0) 70%);
+  bottom: -15%;
+  right: -10%;
+  animation: float-blob-2 30s infinite alternate ease-in-out;
+  animation-delay: -5s;
+}
+
+.blob-3 {
+  width: 45vmax;
+  height: 45vmax;
+  background: radial-gradient(circle, #00ffc4 0%, rgba(0, 255, 196, 0) 70%);
+  top: 30%;
+  left: 25%;
+  animation: float-blob-3 28s infinite alternate ease-in-out;
+  animation-delay: -10s;
+}
+
+@keyframes float-blob-1 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(10%, 15%) scale(1.1) rotate(180deg);
+  }
+  100% {
+    transform: translate(-5%, -5%) scale(0.9) rotate(360deg);
+  }
+}
+
+@keyframes float-blob-2 {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-15%, -10%) scale(0.95) rotate(-180deg);
+  }
+  100% {
+    transform: translate(5%, 10%) scale(1.05) rotate(-360deg);
+  }
+}
+
+@keyframes float-blob-3 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-8%, 12%) scale(1.15);
+  }
+  100% {
+    transform: translate(12%, -8%) scale(0.85);
+  }
+}

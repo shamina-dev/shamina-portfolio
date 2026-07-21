@@ -1,40 +1,71 @@
-<!-- features/skills/skills.component.html -->
-<!-- About me section -->
-<section class="container py-5">
-  <div class="row align-items-center">
-    <!-- Left column: profile image frame -->
-    <div class="col-md-4 text-center mb-4 mb-md-0">
-      <div class="profile-frame mx-auto">
-
+<div class="about-skills-section py-5">
+  <div class="container">
+    
+    <!-- About Me Grid -->
+    <div class="row align-items-center g-5 mb-5">
+      <!-- Left column: Profile image frame -->
+      <div class="col-lg-5 text-center">
+        <div class="avatar-frame-container mx-auto">
+          <div class="avatar-glow"></div>
+          <div class="avatar-frame">
+            <img src="assets/avatar.png" alt="Shamina Palansooriya Profile Avatar" class="profile-img" />
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right column: Text content -->
+      <div class="col-lg-7">
+        <div class="section-tag mb-2">My Biography</div>
+        <h2 class="section-title fw-bold mb-3">
+          About <span class="text-gradient">Me</span>
+        </h2>
+        <h4 class="text-gradient-purple mb-4">Software Engineer Intern</h4>
+        <p class="about-desc text-muted mb-4">
+          I am a dedicated Software Engineering undergraduate student and Software Engineer Intern with hands-on experience in full-stack development and UI/UX design. I excel at creating robust and user-centric web applications by leveraging modern development frameworks and tools.
+        </p>
+        <p class="about-desc text-muted">
+          Passionate about innovation and problem-solving, I am eager to contribute to impactful projects, expand my technical expertise, and bridge the gap between back-end reliability and front-end elegance.
+        </p>
       </div>
     </div>
-    <!-- Right column: text content -->
-    <div class="col-md-8">
-      <h2 class="fw-bold">
-        About <span class="text-primary">Me</span>
-      </h2>
-      <h4 class="text-primary mb-3">Software Engineer Intern</h4>
-      <p>
-        I am a dedicated Software Engineering Undergraduate and Software
-        Engineer Intern with hands-on experience in full-stack development
-        and UI/UX design. I excel at creating robust and user-centric web
-        applications by leveraging modern development frameworks and tools.
-        Passionate about innovation and problem-solving, I am eager to
-        contribute to impactful projects and continuously expand my
-        technical expertise.
-      </p>
-    </div>
-  </div>
-  <div class="container">
-  <h2 class="text-center mb-4">Skills</h2>
-  <div class="row g-3">
-    <div class="col-sm-6 col-lg-3" *ngFor="let skill of skillsList">
-      <p-panel>
-        <ng-template pTemplate="header">
-          <i class="pi pi-{{ skill.icon }}"></i> {{ skill.name }}
-        </ng-template>
-      </p-panel>
+
+    <!-- Skills Section -->
+    <div class="skills-block mt-5 pt-4">
+      <div class="text-center mb-5">
+        <div class="section-tag">ABILITIES</div>
+        <h2 class="section-title">Technical <span class="text-gradient">Skills</span></h2>
+      </div>
+
+      <!-- Categories Columns -->
+      <div class="row g-4">
+        <div class="col-lg-4" *ngFor="let cat of categories">
+          <div class="category-card glass-card h-100 p-4">
+            <h3 class="category-title mb-4 pb-2 border-bottom-accent d-flex align-items-center justify-content-between">
+              {{ cat }}
+              <span class="category-indicator"></span>
+            </h3>
+            
+            <div class="skills-list d-flex flex-column gap-3">
+              <div 
+                *ngFor="let skill of getSkillsByCategory(cat)" 
+                class="skill-item d-flex align-items-center gap-3 p-3 glass-card"
+                [style.--skill-glow]="skill.color"
+              >
+                <div class="skill-icon-wrap" [style.background-color]="skill.color + '15'" [style.color]="skill.color">
+                  <i class="pi" [ngClass]="skill.icon"></i>
+                </div>
+                <div class="skill-info w-100">
+                  <div class="skill-name d-flex justify-content-between font-heading">
+                    <span>{{ skill.name }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
-</section>

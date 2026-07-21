@@ -1,1 +1,53 @@
-<p>projects works!</p>
+<div class="projects-section py-5">
+  <div class="container">
+
+    <!-- Projects Section -->
+    <div class="mt-4" id="projects">
+      <div class="text-center mb-5">
+        <div class="section-tag">COMING SOON</div>
+        <h2 class="section-title">Pending <span class="text-gradient-purple">Projects</span></h2>
+      </div>
+
+      <!--
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4" *ngFor="let proj of projects">
+          <div class="project-card glass-card h-100 d-flex flex-column">
+            <div class="project-cover position-relative overflow-hidden" [ngClass]="proj.gradientClass">
+              <div class="cover-overlay d-flex align-items-center justify-content-center">
+                <i class="pi pi-code cover-icon"></i>
+              </div>
+            </div>
+            
+            <div class="project-body p-4 flex-grow-1 d-flex flex-column">
+              <h3 class="project-title mb-2 font-heading">{{ proj.title }}</h3>
+              <p class="project-desc text-muted flex-grow-1 mb-4">{{ proj.description }}</p>
+              
+              <div class="project-tags d-flex flex-wrap gap-2 mb-4">
+                <span class="tech-tag" *ngFor="let tag of proj.tags">{{ tag }}</span>
+              </div>
+              
+              <div class="project-actions d-flex gap-3 pt-3 border-top-glass">
+                <a [href]="proj.githubUrl" target="_blank" rel="noopener" class="btn btn-neon py-2 px-3 btn-sm flex-grow-1 text-center justify-content-center">
+                  <i class="pi pi-github"></i>
+                  <span>GitHub</span>
+                </a>
+                <a [href]="proj.liveUrl" target="_blank" rel="noopener" class="btn btn-neon-outline py-2 px-3 btn-sm flex-grow-1 text-center justify-content-center">
+                  <i class="pi pi-external-link"></i>
+                  <span>Demo</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      -->
+
+      <div class="projects-pending-card glass-card p-5 text-center mt-4">
+        <i class="pi pi-hourglass text-gradient mb-3" style="font-size: 2.5rem; display: inline-block; animation: pulse 2s infinite alternate;"></i>
+        <h3 class="font-heading text-white mb-2">Projects pending</h3>
+        <p class="text-muted mb-0">Undergraduate portfolio and full-stack solutions currently under development.</p>
+      </div>
+    </div>
+
+  </div>
+</div>

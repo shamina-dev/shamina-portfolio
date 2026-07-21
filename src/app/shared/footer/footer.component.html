@@ -1,1 +1,28 @@
-<p>footer works!</p>
+<footer class="footer py-5 mt-5">
+  <div class="container text-center position-relative">
+    <div class="social-links mb-4">
+      <a href="https://www.linkedin.com/in/shamina-palansooriya/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3BKEoZLU65RQqn7cbm7x6SPQ%3D%3D" target="_blank" rel="noopener" class="social-link" aria-label="LinkedIn">
+        <i class="pi pi-linkedin"></i>
+      </a>
+      <a href="https://github.com/shamina-dev" target="_blank" rel="noopener" class="social-link" aria-label="GitHub">
+        <i class="pi pi-github"></i>
+      </a>
+      <a href="mailto:shaminapalansooriya@gmail.com" class="social-link" aria-label="Email">
+        <i class="pi pi-envelope"></i>
+      </a>
+    </div>
+    
+    <p class="copyright mb-2">
+      &copy; {{ currentYear }} <span class="text-white">Shamina Palansooriya</span>. All Rights Reserved.
+    </p>
+    <p class="made-with text-muted">
+      Designed & Built with <i class="pi pi-heart-fill heart-icon"></i> using Angular & Bootstrap
+    </p>
+
+    <div class="scroll-top-container mt-4">
+      <button (click)="scrollToTop()" class="btn-scroll-top" aria-label="Scroll to top">
+        <i class="pi pi-arrow-up"></i>
+      </button>
+    </div>
+  </div>
+</footer>

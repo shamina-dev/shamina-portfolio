@@ -1,35 +1,193 @@
-// Custom.scss
-// Option A: Include all of Bootstrap
-
-// Include any default variable overrides here (though functions won't be available)
 @import "primeicons/primeicons.css";
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
 @import "../node_modules/bootstrap/scss/bootstrap";
+
 :root {
-  --primary: #0056FF;
-  --text-default: #000;
-  --font-base: 'Open Sans', sans-serif;
+  --primary-glow: #00f2fe;
+  --secondary-glow: #b600ff;
+  --accent-glow: #00ffc4;
+  --bg-dark: #030308;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: rgba(0, 0, 0, 0.3);
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
 }
 
-// Then add additional custom code here
+/* Global Reset & Base Styles */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  scroll-behavior: smooth;
+}
 
-// /* styles.scss */
-// html, body {
-//   margin: 0;
-//   padding: 0;
-//   overflow-x: hidden;
-//   box-sizing: border-box;
-// }
+*, *::before, *::after {
+  box-sizing: inherit;
+}
 
-// *, *::before, *::after {
-//   box-sizing: inherit;
-// }
+section {
+  position: relative;
+  z-index: 3;
+  scroll-margin-top: 90px; /* Offset for floating sticky navbar */
+}
 
-// .container-fluid {
-//   scroll-behavior: smooth;
-//   scroll-snap-type: y mandatory;
-// }
+/* Typography Customizations */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
 
-// section {
-//   scroll-snap-align: start;
-// }
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0, 242, 254, 0.25) 0%, rgba(182, 0, 255, 0.25) 100%);
+  border-radius: 5px;
+  border: 2px solid var(--bg-dark);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0, 242, 254, 0.5) 0%, rgba(182, 0, 255, 0.5) 100%);
+}
+
+/* Utility styles */
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary-glow) 0%, #0099ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, var(--secondary-glow) 0%, #8000ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-green {
+  background: linear-gradient(135deg, var(--accent-glow) 0%, #00d28d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glassmorphism Utility */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 var(--glass-shadow);
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  overflow: hidden;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px 0 rgba(0, 242, 254, 0.1);
+}
+
+/* Glowing buttons */
+.btn-neon {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(182, 0, 255, 0.15) 100%);
+  color: #fff;
+  border: 1px solid rgba(0, 242, 254, 0.4);
+  border-radius: 30px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-neon:hover {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.3) 0%, rgba(182, 0, 255, 0.3) 100%);
+  border-color: rgba(0, 242, 254, 0.8);
+  color: #fff;
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.25), 0 0 5px rgba(182, 0, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-neon:active {
+  transform: translateY(1px);
+}
+
+/* SVG Icon styles */
+.tech-icon {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s;
+}
+
+.glass-card:hover .tech-icon {
+  stroke: var(--primary-glow);
+}
+
+/* PrimeNG Panel Custom overrides */
+p-panel {
+  .p-panel {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    color: var(--text-primary) !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: rgba(0, 242, 254, 0.3) !important;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+      transform: translateY(-2px);
+    }
+  }
+
+  .p-panel-header {
+    background: transparent !important;
+    border: none !important;
+    color: #fff !important;
+    padding: 1rem 1.25rem !important;
+    font-family: var(--font-heading) !important;
+    font-weight: 500 !important;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+      color: var(--primary-glow);
+      font-size: 1.25rem;
+    }
+  }
+
+  .p-panel-content {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-secondary) !important;
+    padding: 0 1.25rem 1rem 1.25rem !important;
+  }
+}

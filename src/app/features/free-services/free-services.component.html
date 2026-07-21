@@ -1,0 +1,215 @@
+<div class="free-services-container py-5">
+  <!-- GALLERY VIEW: When no animation is active -->
+  <div
+    *ngIf="!activeAnim()"
+    class="container gallery-view position-relative z-1 py-3"
+  >
+    <div class="text-center mb-5 mt-4">
+      <div class="section-tag">COMMUNITY LABS</div>
+      <h1 class="section-title">
+        Ambient <span class="text-gradient">Backgrounds</span>
+      </h1>
+      <p class="section-desc text-muted mx-auto mt-2" style="max-width: 650px">
+        Elevate your web presence with high-performance, canvas-based ambient
+        animations. Select a style below to view the interactive demo and
+        download the code segment.
+      </p>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-6 col-lg-4" *ngFor="let anim of animations">
+        <div
+          (click)="selectAnimation(anim)"
+          class="anim-card glass-card p-4 h-100 d-flex flex-col justify-content-between cursor-pointer"
+        >
+          <div>
+            <div class="card-glow-bg"></div>
+            <h3 class="anim-title mb-3 font-heading text-white">
+              {{ anim.name }}
+            </h3>
+            <p class="anim-desc text-muted mb-0">{{ anim.description }}</p>
+          </div>
+
+          <div
+            class="mt-4 pt-3 border-top-glass flex items-center text-primary-glow font-medium group-hover:text-white transition-colors"
+          >
+            <span>View Demo & Code</span>
+            <i class="pi pi-arrow-right ms-2 arrow-icon"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN PREVIEW: When an animation is active -->
+  <div *ngIf="activeAnim()" class="fullscreen-view">
+    <!-- Canvas Element -->
+    <canvas #bgCanvas class="fixed inset-0 w-100 h-100 z-0 bg-dark"></canvas>
+
+    <!-- Overlay HUD -->
+    <div
+      class="overlay-hud fixed inset-0 z-2 pointer-events-none d-flex flex-column justify-content-between p-4 p-md-5"
+    >
+      <!-- Top Action Navigation Header -->
+      <div class="top-nav d-flex justify-content-between w-100">
+        <button
+          (click)="goBack()"
+          class="pointer-events-auto btn-hud btn-hud-back d-flex align-items-center gap-2"
+        >
+          <i class="pi pi-arrow-left"></i>
+          <span>Back to gallery</span>
+        </button>
+
+        <button
+          (click)="viewCode()"
+          class="pointer-events-auto btn-hud btn-hud-code d-flex align-items-center gap-2"
+        >
+          <i class="pi pi-code"></i>
+          <span>Get Code Segment</span>
+        </button>
+      </div>
+
+      <!-- Centered Branding Card -->
+      <div
+        class="center-branding d-flex align-items-center justify-content-center flex-grow-1 w-100"
+      >
+        <div
+          class="branding-card glass-card p-4 p-md-5 text-center pointer-events-auto"
+        >
+          <h2 class="brand-name font-heading text-white mb-2">
+            Shamina Palansooriya
+          </h2>
+          <p class="brand-title text-gradient-purple mb-4">
+            Software Engineer Intern
+          </p>
+          <div class="branding-socials d-flex justify-content-center gap-3">
+            <a
+              href="https://www.linkedin.com/in/shamina-palansooriya/?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3BKEoZLU65RQqn7cbm7x6SPQ%3D%3D"
+              target="_blank"
+              rel="noopener"
+              class="branding-social-btn"
+              aria-label="LinkedIn"
+            >
+              <i class="pi pi-linkedin"></i>
+            </a>
+            <a
+              href="https://github.com/shamina-dev"
+              target="_blank"
+              rel="noopener"
+              class="branding-social-btn"
+              aria-label="GitHub"
+            >
+              <i class="pi pi-github"></i>
+            </a>
+            <a
+              href="mailto:shaminapalansooriya@gmail.com"
+              class="branding-social-btn"
+              aria-label="Email"
+            >
+              <i class="pi pi-envelope"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Control Panel -->
+      <div class="bottom-panel d-flex justify-content-center mb-2">
+        <div
+          class="pointer-events-auto control-box glass-card p-4 d-flex flex-column flex-md-row align-items-center gap-4 gap-md-5 shadow-2xl"
+        >
+          <!-- Name/Status -->
+          <div class="text-center text-md-start">
+            <h2 class="active-anim-name mb-1">{{ activeAnim()?.name }}</h2>
+            <p class="active-anim-tag text-muted mb-0">Active Simulation</p>
+          </div>
+
+          <div class="panel-divider d-none d-md-block"></div>
+
+          <!-- Speed slider control -->
+          <div class="slider-control d-flex align-items-center gap-3">
+            <label
+              for="speedSlider"
+              class="slider-label text-muted whitespace-nowrap"
+            >
+              Speed:
+              <span class="text-white font-medium ms-1"
+                >{{ speedMultiplier() | number: "1.1-1" }}x</span
+              >
+            </label>
+            <input
+              type="range"
+              id="speedSlider"
+              min="0.1"
+              max="3.0"
+              step="0.1"
+              [value]="speedMultiplier()"
+              (input)="updateSpeed($event)"
+              class="speed-slider cursor-pointer"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CODE PREVIEW MODAL OVERLAY -->
+  <div
+    class="code-modal-backdrop d-flex align-items-center justify-content-center"
+    *ngIf="showCodeModal"
+  >
+    <div class="code-modal-card glass-card p-4 max-w-4xl w-100 mx-3">
+      <!-- Modal Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="modal-title font-heading text-white mb-1">
+            {{ activeAnim()?.name }} Code
+          </h3>
+          <p class="modal-subtitle text-muted mb-0">
+            Embed this vanilla HTML/Canvas segment directly into your page
+          </p>
+        </div>
+        <button
+          (click)="closeCodeModal()"
+          class="btn-close-modal"
+          aria-label="Close modal"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <!-- Code Box Area -->
+      <div class="code-box-wrapper position-relative mb-4">
+        <pre
+          class="code-snippet-box"
+        ><code class="language-html">{{ activeCodeSnippet }}</code></pre>
+
+        <button
+          (click)="copyCode()"
+          class="btn-copy-code d-flex align-items-center gap-2"
+          [class.copied]="copied"
+        >
+          <i class="pi" [ngClass]="copied ? 'pi-check' : 'pi-copy'"></i>
+          <span>{{ copied ? "Copied!" : "Copy Code" }}</span>
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex justify-content-end gap-3">
+        <button
+          (click)="downloadCodeFile()"
+          class="btn btn-neon py-2 px-4 btn-sm d-flex align-items-center gap-2"
+        >
+          <i class="pi pi-download"></i>
+          <span>Download HTML File</span>
+        </button>
+        <button
+          (click)="closeCodeModal()"
+          class="btn btn-neon-outline py-2 px-4 btn-sm"
+        >
+          <span>Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,41 +1,144 @@
-:root {
-  --primary: #0056FF;
-  --text-default: #000;
-  --font-base: 'Open Sans', sans-serif;
-}
-
 .navbar {
-  background-color: #fff;                     /* white bg */
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  font-family: var(--font-base);
+  background: rgba(3, 3, 8, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  padding: 1.25rem 0;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  z-index: 1000;
+  
+  &.navbar-scrolled {
+    background: rgba(3, 3, 8, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+    padding: 0.75rem 0;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
 }
 
-/* Brand */
 .navbar-brand {
-  font-weight: 600;
-  font-size: 1.125rem;                        /* ~18px */
-  color: #292929 !important;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+  color: #ffffff !important;
+  transition: text-shadow 0.3s ease;
+  
+  &:hover {
+    text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+  }
+  
+  .brand-accent {
+    color: var(--primary-glow);
+    font-weight: 800;
+    margin: 0 2px;
+    animation: glow-pulse 2s infinite alternate;
+  }
 }
 
-/* Nav links */
 .navbar-nav .nav-link {
+  font-family: var(--font-body);
   font-weight: 500;
-  font-size: 1rem;
-  color: var(--text-default);
+  font-size: 0.95rem;
+  color: var(--text-secondary) !important;
   margin-left: 1.5rem;
-  transition: color 0.2s;
-}
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link.active {
-  color: var(--primary);
+  position: relative;
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+    transition: width 0.3s ease;
+  }
+  
+  &:hover, &.active {
+    color: #ffffff !important;
+    
+    &::after {
+      width: 100%;
+    }
+  }
+  
+  &.active {
+    text-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+  }
 }
 
-/* Toggler (mobile) */
+/* Custom Hamburger Icon Animation */
 .navbar-toggler {
   border: none;
+  padding: 0.5rem;
+  outline: none;
+  
+  &:focus {
+    box-shadow: none;
+  }
+  
+  .toggler-icon {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: #ffffff;
+    border-radius: 1px;
+    transition: all 0.3s ease;
+    
+    + .toggler-icon {
+      margin-top: 5px;
+    }
+  }
+  
+  /* Animate to X when not collapsed */
+  &:not(.collapsed) {
+    .top-bar {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    .middle-bar {
+      opacity: 0;
+    }
+    .bottom-bar {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+  }
 }
-.navbar-light .navbar-toggler-icon {
-  /* use Bootstrap’s default bars but ensure they’re dark */
-  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280,0,0,0.8%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/ %3E%3C/svg%3E");
+
+/* Mobile Dropdown Styling */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    background: rgba(5, 5, 12, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  }
+  
+  .navbar-nav {
+    .nav-link {
+      margin-left: 0;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
+@keyframes glow-pulse {
+  0% {
+    text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
+  }
+  100% {
+    text-shadow: 0 0 15px rgba(0, 242, 254, 0.7);
+  }
 }
