@@ -1,23 +1,97 @@
-<!-- features/contact/contact.component.html -->
-<div class="container">
-  <h2 class="text-center mb-4">Let’s Discuss Your Project</h2>
-  <form (ngSubmit)="onSubmit()" [formGroup]="contactForm">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <input formControlName="fullName" class="form-control" placeholder="Full name" />
-      </div>
-      <div class="col-md-6">
-        <input formControlName="email" type="email" class="form-control" placeholder="Email" />
-      </div>
-      <div class="col-md-12">
-        <input formControlName="phone" class="form-control" placeholder="Phone number" />
-      </div>
-      <div class="col-md-12">
-        <textarea formControlName="message" rows="5" class="form-control" placeholder="Short description"></textarea>
-      </div>
-      <div class="col-md-12 text-end">
-        <button type="submit" class="btn btn-primary">Send Message</button>
+<div class="contact-section py-5" id="contact">
+  <div class="container">
+    
+    <div class="text-center mb-5">
+      <div class="section-tag">GET IN TOUCH</div>
+      <h2 class="section-title">Let's Discuss Your <span class="text-gradient">Project</span></h2>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="contact-card glass-card p-5">
+          <form (ngSubmit)="onSubmit()" [formGroup]="contactForm" novalidate>
+            <div class="row g-4">
+              
+              <!-- Full Name -->
+              <div class="col-md-6">
+                <div class="form-group position-relative">
+                  <input 
+                    formControlName="fullName" 
+                    type="text" 
+                    id="fullName"
+                    class="form-input" 
+                    placeholder=" "
+                    required
+                  />
+                  <label for="fullName" class="form-label">Full Name</label>
+                  <span class="focus-border"></span>
+                </div>
+              </div>
+              
+              <!-- Email Address -->
+              <div class="col-md-6">
+                <div class="form-group position-relative">
+                  <input 
+                    formControlName="email" 
+                    type="email" 
+                    id="email"
+                    class="form-input" 
+                    placeholder=" "
+                    required
+                  />
+                  <label for="email" class="form-label">Email Address</label>
+                  <span class="focus-border"></span>
+                </div>
+              </div>
+              
+              <!-- Phone Number -->
+              <div class="col-md-12">
+                <div class="form-group position-relative">
+                  <input 
+                    formControlName="phone" 
+                    type="tel" 
+                    id="phone"
+                    class="form-input" 
+                    placeholder=" "
+                  />
+                  <label for="phone" class="form-label">Phone Number</label>
+                  <span class="focus-border"></span>
+                </div>
+              </div>
+              
+              <!-- Project Description -->
+              <div class="col-md-12">
+                <div class="form-group position-relative">
+                  <textarea 
+                    formControlName="message" 
+                    id="message"
+                    rows="5" 
+                    class="form-input form-textarea" 
+                    placeholder=" "
+                    required
+                  ></textarea>
+                  <label for="message" class="form-label">Short Description of Project</label>
+                  <span class="focus-border"></span>
+                </div>
+              </div>
+              
+              <!-- Submit Button -->
+              <div class="col-md-12 text-center mt-5">
+                <button 
+                  type="submit" 
+                  class="btn btn-neon px-5 py-3"
+                  [disabled]="contactForm.invalid"
+                >
+                  <span>Send Message</span>
+                  <i class="pi pi-send"></i>
+                </button>
+              </div>
+              
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  </form>
+
+  </div>
 </div>

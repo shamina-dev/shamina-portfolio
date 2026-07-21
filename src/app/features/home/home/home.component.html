@@ -1,51 +1,125 @@
-<section class="hero position-relative overflow-hidden py-5">
+<div class="hero-container py-5 d-flex align-items-center">
   <div class="container">
-    <div class="row align-items-center">
-      <!-- left text -->
-      <div class="col-md-6">
-        <p class="hero-intro mb-2">Hello It’s me</p>
-        <h1 class="hero-name mb-3">Shamina Palansooriya</h1>
-        <p class="hero-subtitle mb-3">
-          And I’m a <span class="role">Software Engineer Intern</span>
-        </p>
-        <p class="hero-desc mb-4">
-          Undergraduate software engineering student and intern passionate about innovative coding solutions.
+    <div class="row align-items-center g-5">
+      
+      <!-- Left Column: Text & Call to Action -->
+      <div class="col-lg-6 text-column">
+        <div class="welcome-badge mb-3">
+          <span class="badge-dot"></span>
+          Hello, It's me
+        </div>
+        
+        <h1 class="hero-name mb-3">
+          Shamina <span class="text-gradient">Palansooriya</span>
+        </h1>
+        
+        <div class="hero-subtitle mb-4">
+          And I'm a <span class="role text-gradient">{{ currentRole }}<span class="cursor-blink">|</span></span>
+        </div>
+        
+        <p class="hero-desc mb-5 text-muted">
+          I am a Software Engineering undergraduate student and intern. I specialize in building scalable web applications, designing interactive UI/UX, and solving complex problems with clean code.
         </p>
 
-        <!-- social-icons.component.html -->
-        <div class="social-icons mb-4">
+        <!-- Social Icons -->
+        <div class="social-icons mb-5">
           <a
             *ngFor="let icon of icons"
-            href="#"
-            [ngClass]="{ 'selected': selected === icon.name }"
-            (click)="select(icon.name, $event)"
+            [href]="icon.url"
+            target="_blank"
+            rel="noopener"
+            class="social-icon-btn"
+            [attr.aria-label]="icon.name"
           >
             <i class="pi" [ngClass]="icon.piClass"></i>
           </a>
         </div>
 
-        <button class="btn download-btn" download>
-          Download CV
-        </button>
+        <!-- Call to Actions -->
+        <div class="cta-buttons d-flex flex-wrap gap-3">
+          <button class="btn download-btn shadow-neon" aria-label="Download CV">
+            <span class="text">Download CV</span>
+            <svg
+              class="icon"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 1V10"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+              <path
+                d="M4 7L8 11L12 7"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+              <rect x="2" y="13" width="12" height="1.5" fill="currentColor" />
+            </svg>
+          </button>
+          
+          <a href="#contact" (click)="scrollToContact($event)" class="btn btn-neon-secondary">
+            <span>Contact Me</span>
+            <i class="pi pi-arrow-right"></i>
+          </a>
+        </div>
       </div>
 
-      <!-- right shapes -->
-        <div class="col-md-6 position-relative ">
-          <!-- big filled blue -->
-          <div class="shape-filled"></div>
-          <!-- black outline -->
-          <div class="shape-black-outline"></div>
-
-          <!-- hex pattern -->
-          <div class="hex-pattern">
-            <div class="hex"></div>
-            <div class="hex"></div>
-            <div class="hex"></div>
-            <div class="hex"></div>
-            <div class="hex"></div>
-            <div class="hex"></div>
+      <!-- Right Column: Interactive Code IDE Terminal -->
+      <div class="col-lg-6 visual-column">
+        <div class="terminal-card glass-card">
+          <!-- Terminal Header -->
+          <div class="terminal-header d-flex align-items-center justify-content-between">
+            <div class="window-controls d-flex gap-2">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="window-title text-muted">developer.ts</div>
+            <div class="window-action">
+              <i class="pi pi-copy text-muted"></i>
+            </div>
+          </div>
+          
+          <!-- Terminal Content (Code Simulator) -->
+          <div class="terminal-body">
+            <pre class="code-lines">
+<code><span class="line-num">1</span><span class="token keyword">const</span> <span class="token variable">developer</span> = {{ '{' }}</code>
+<code><span class="line-num">2</span>  name: <span class="token string">"Shamina Palansooriya"</span>,</code>
+<code><span class="line-num">3</span>  role: <span class="token string">"Software Engineer Intern"</span>,</code>
+<code><span class="line-num">4</span>  status: <span class="token string">"Undergraduate Student"</span>,</code>
+<code><span class="line-num">5</span>  skills: [</code>
+<code><span class="line-num">6</span>    <span class="token string">"Angular"</span>, <span class="token string">"TypeScript"</span>, </code>
+<code><span class="line-num">7</span>    <span class="token string">"HTML5/CSS3"</span>, <span class="token string">"UI/UX"</span>, <span class="token string">"IoT"</span></code>
+<code><span class="line-num">8</span>  ],</code>
+<code><span class="line-num">9</span>  passions: [</code>
+<code><span class="line-num">10</span>    <span class="token string">"Clean Code"</span>, <span class="token string">"Responsive UI"</span>,</code>
+<code><span class="line-num">11</span>    <span class="token string">"Interactive Animations"</span></code>
+<code><span class="line-num">12</span>  ],</code>
+<code><span class="line-num">13</span>  hardWorker: <span class="token boolean">true</span>,</code>
+<code><span class="line-num">14</span>  lovesCoffee: <span class="token boolean">true</span></code>
+<code><span class="line-num">15</span>{{ '}' }};</code>
+            </pre>
           </div>
         </div>
+
+        <!-- Small floating helper card -->
+        <div class="floating-tech-card glass-card d-flex align-items-center gap-3">
+          <div class="icon-wrap">
+            <i class="pi pi-code"></i>
+          </div>
+          <div>
+            <div class="card-label">CURRENTLY WORKING ON</div>
+            <div class="card-value">Angular Portfolio Showcase</div>
+          </div>
+        </div>
+      </div>
+      
     </div>
   </div>
-</section>
+</div>

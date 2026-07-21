@@ -1,4 +1,52 @@
-<!-- features/resume/resume.component.html -->
-<div class="container">
-  <h2 class="text-center mb-4">Resume</h2>
+<div class="resume-section py-5">
+  <div class="container">
+    
+    <div class="text-center mb-5">
+      <div class="section-tag">MY PATH</div>
+      <h2 class="section-title">Resume & <span class="text-gradient">Timeline</span></h2>
+    </div>
+
+    <div class="row g-5">
+      <!-- Experience Column -->
+      <div class="col-lg-6">
+        <h3 class="timeline-group-title mb-4 d-flex align-items-center gap-3">
+          <i class="pi pi-briefcase group-icon"></i>
+          Work Experience
+        </h3>
+        
+        <div class="timeline-container">
+          <div class="timeline-item" *ngFor="let item of experienceList">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content glass-card p-4">
+              <span class="timeline-year badge bg-dark text-gradient font-heading">{{ item.year }}</span>
+              <h4 class="item-title mt-3 mb-1">{{ item.role }}</h4>
+              <h5 class="item-institution mb-3 text-gradient-purple">{{ item.institution }}</h5>
+              <p class="item-desc text-muted mb-0">{{ item.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Education Column -->
+      <div class="col-lg-6">
+        <h3 class="timeline-group-title mb-4 d-flex align-items-center gap-3">
+          <i class="pi pi-book group-icon"></i>
+          Education
+        </h3>
+        
+        <div class="timeline-container">
+          <div class="timeline-item" *ngFor="let item of educationList">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content glass-card p-4">
+              <span class="timeline-year badge bg-dark text-gradient-green font-heading">{{ item.year }}</span>
+              <h4 class="item-title mt-3 mb-1">{{ item.role }}</h4>
+              <h5 class="item-institution mb-3 text-gradient-purple">{{ item.institution }}</h5>
+              <p class="item-desc text-muted mb-0">{{ item.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>

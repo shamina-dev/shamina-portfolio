@@ -7,6 +7,7 @@ import { SkillsModule } from './features/skills/skills.module';
 import { ProjectsModule } from './features/projects/projects.module';
 import { ResumeModule } from './features/resume/resume.module';
 import { ContactModule } from './features/contact/contact.module';
+import { FreeServicesModule } from './features/free-services/free-services.module';
 import { LandingPageComponent } from './landing-page/landing-page.component';
 import { SharedModule } from './shared.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -23,6 +24,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     ProjectsModule,
     ResumeModule,
     ContactModule,
+    FreeServicesModule,
     SharedModule,
     BrowserAnimationsModule
   ],
