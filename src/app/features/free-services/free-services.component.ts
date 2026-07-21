@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
 import { ThemeService } from '../../core/services/theme.service';
 import { Subscription } from 'rxjs';
 
@@ -69,6 +69,10 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
   copied = false;
   activeCodeSnippet = '';
 
+  mouseX = 0;
+  mouseY = 0;
+  isMouseOver = false;
+
   @ViewChild('bgCanvas') canvasRef?: ElementRef<HTMLCanvasElement>;
 
   private ctx: CanvasRenderingContext2D | null = null;
@@ -96,6 +100,27 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
     this.stopAnimation();
     if (this.themeSub) {
       this.themeSub.unsubscribe();
+    }
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
+    this.mouseX = event.clientX;
+    this.mouseY = event.clientY;
+    this.isMouseOver = true;
+  }
+
+  @HostListener('window:mouseleave')
+  onMouseLeave(): void {
+    this.isMouseOver = false;
+  }
+
+  @HostListener('window:touchmove', ['$event'])
+  onTouchMove(event: TouchEvent): void {
+    if (event.touches.length > 0) {
+      this.mouseX = event.touches[0].clientX;
+      this.mouseY = event.touches[0].clientY;
+      this.isMouseOver = true;
     }
   }
 
@@ -257,6 +282,27 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
         p.x! += p.vx! * speed * (dt * 60);
         p.y! += p.vy! * speed * (dt * 60);
         
+        // Mouse pointer interaction (push away & connect)
+        if (this.isMouseOver) {
+          const dx = p.x! - this.mouseX;
+          const dy = p.y! - this.mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 160) {
+            const force = (160 - dist) / 160;
+            p.x! += (dx / dist) * force * 3 * speed;
+            p.y! += (dy / dist) * force * 3 * speed;
+
+            // Connection beam to cursor
+            this.ctx!.beginPath();
+            this.ctx!.moveTo(p.x!, p.y!);
+            this.ctx!.lineTo(this.mouseX, this.mouseY);
+            const alpha = (1 - dist / 160) * (isDark ? 0.35 : 0.45);
+            this.ctx!.strokeStyle = `${strokeColor} ${alpha.toFixed(3)})`;
+            this.ctx!.lineWidth = 1.1;
+            this.ctx!.stroke();
+          }
+        }
+
         if (p.x! < 0 || p.x! > this.width) p.vx! *= -1;
         if (p.y! < 0 || p.y! > this.height) p.vy! *= -1;
 
@@ -284,13 +330,23 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
       }
     } 
     else if (styleId === 'gradient') {
-      const alphaCenter = isDark ? 0.25 : 0.35;
-      this.entities.forEach(orb => {
-        orb.x! += orb.vx! * speed * (dt * 60);
-        orb.y! += orb.vy! * speed * (dt * 60);
+      const alphaCenter = isDark ? 0.28 : 0.38;
+      this.entities.forEach((orb, index) => {
+        // Orb 0 smoothly follows cursor (antigravity fluid tracking)
+        if (index === 0 && this.isMouseOver) {
+          orb.x! += (this.mouseX - orb.x!) * 0.04 * speed;
+          orb.y! += (this.mouseY - orb.y!) * 0.04 * speed;
+        } else if (index === 1 && this.isMouseOver) {
+          // Counter-drift opposite to mouse for 3D parallax depth
+          orb.x! += ((this.width - this.mouseX) - orb.x!) * 0.02 * speed;
+          orb.y! += ((this.height - this.mouseY) - orb.y!) * 0.02 * speed;
+        } else {
+          orb.x! += orb.vx! * speed * (dt * 60);
+          orb.y! += orb.vy! * speed * (dt * 60);
+        }
         
-        if (orb.x! < -this.width*0.2 || orb.x! > this.width*1.2) orb.vx! *= -1;
-        if (orb.y! < -this.height*0.2 || orb.y! > this.height*1.2) orb.vy! *= -1;
+        if (orb.x! < -this.width*0.3 || orb.x! > this.width*1.3) orb.vx! *= -1;
+        if (orb.y! < -this.height*0.3 || orb.y! > this.height*1.3) orb.vy! *= -1;
 
         const color = orb.color as number[];
         const gradient = this.ctx!.createRadialGradient(orb.x!, orb.y!, 0, orb.x!, orb.y!, orb.r!);
@@ -308,8 +364,20 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
         rib.phase! += rib.speed! * speed * dt;
         
         this.ctx!.beginPath();
-        for (let x = 0; x <= this.width; x += 15) {
-          const y = rib.yOffset! + Math.sin(x * rib.frequency! + rib.phase!) * rib.amplitude!;
+        for (let x = 0; x <= this.width; x += 12) {
+          let y = rib.yOffset! + Math.sin(x * rib.frequency! + rib.phase!) * rib.amplitude!;
+
+          // Cursor wave distortion near mouse pointer
+          if (this.isMouseOver) {
+            const dx = x - this.mouseX;
+            const dist = Math.abs(dx);
+            if (dist < 220) {
+              const pushFactor = Math.exp(-(dx * dx) / 10000);
+              const mouseOffsetY = (this.mouseY - rib.yOffset!) * 0.45;
+              y += mouseOffsetY * pushFactor;
+            }
+          }
+
           if (x === 0) this.ctx!.moveTo(x, y);
           else this.ctx!.lineTo(x, y);
         }
@@ -321,12 +389,41 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
       });
     } 
     else if (styleId === 'isometric') {
-      this.ctx.strokeStyle = isDark ? 'rgba(182, 0, 255, 0.35)' : 'rgba(139, 92, 246, 0.45)';
+      const strokeColor = isDark ? 'rgba(182, 0, 255, 0.35)' : 'rgba(139, 92, 246, 0.45)';
+      this.ctx.strokeStyle = strokeColor;
       this.ctx.lineWidth = 1.2;
 
       this.entities.forEach(shape => {
         shape.y! -= shape.vy! * speed * dt;
-        shape.angle! += shape.vAngle! * speed * dt;
+        
+        let extraRotation = 0;
+        let scale = 1.0;
+
+        // Cursor proximity magnetic attraction & spin
+        if (this.isMouseOver) {
+          const dx = shape.x! - this.mouseX;
+          const dy = shape.y! - this.mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 180) {
+            const force = (180 - dist) / 180;
+            extraRotation = force * Math.PI * 0.5;
+            scale = 1.0 + force * 0.4;
+            shape.x! += (dx / dist) * force * 2;
+
+            // Subtle magnetic beam to cursor
+            this.ctx!.beginPath();
+            this.ctx!.moveTo(shape.x!, shape.y!);
+            this.ctx!.lineTo(this.mouseX, this.mouseY);
+            this.ctx!.strokeStyle = isDark ? `rgba(0, 242, 254, ${(force * 0.3).toFixed(2)})` : `rgba(2, 132, 199, ${(force * 0.3).toFixed(2)})`;
+            this.ctx!.lineWidth = 0.8;
+            this.ctx!.stroke();
+            this.ctx!.strokeStyle = strokeColor;
+            this.ctx!.lineWidth = 1.2;
+          }
+        }
+
+        shape.angle! += (shape.vAngle! + extraRotation) * speed * dt;
         
         if (shape.y! < -100) {
           shape.y! = this.height + 100;
@@ -336,8 +433,9 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
         this.ctx!.beginPath();
         for (let i = 0; i < shape.sides!; i++) {
           const currentAngle = shape.angle! + (i * Math.PI * 2) / shape.sides!;
-          const px = shape.x! + Math.cos(currentAngle) * shape.size!;
-          const py = shape.y! + Math.sin(currentAngle) * shape.size!;
+          const radius = shape.size! * scale;
+          const px = shape.x! + Math.cos(currentAngle) * radius;
+          const py = shape.y! + Math.sin(currentAngle) * radius;
           if (i === 0) this.ctx!.moveTo(px, py);
           else this.ctx!.lineTo(px, py);
         }
@@ -350,8 +448,20 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
       const t = this.time * 0.4 * speed;
 
       this.entities.forEach(p => {
-        const angle = Math.sin(p.x! * 0.006 + t) * Math.cos(p.y! * 0.006 + t) * Math.PI * 3.5;
+        let angle = Math.sin(p.x! * 0.006 + t) * Math.cos(p.y! * 0.006 + t) * Math.PI * 3.5;
         
+        // Swirling vortex near cursor
+        if (this.isMouseOver) {
+          const dx = p.x! - this.mouseX;
+          const dy = p.y! - this.mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            const force = (180 - dist) / 180;
+            const vortexAngle = Math.atan2(dy, dx) + Math.PI * 0.5;
+            angle = angle * (1 - force) + vortexAngle * force;
+          }
+        }
+
         p.vx! = Math.cos(angle);
         p.vy! = Math.sin(angle);
         
