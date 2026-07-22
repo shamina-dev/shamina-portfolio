@@ -21,21 +21,40 @@
       <div class="col-md-6 col-lg-4" *ngFor="let anim of animations">
         <div
           (click)="selectAnimation(anim)"
-          class="anim-card glass-card p-4 h-100 d-flex flex-col justify-content-between cursor-pointer"
+          (mousemove)="onCardMouseMove($event, anim.id)"
+          (mouseleave)="onCardMouseLeave(anim.id)"
+          class="anim-card glass-card h-100 d-flex flex-column justify-content-between cursor-pointer"
         >
-          <div>
-            <div class="card-glow-bg"></div>
-            <h3 class="anim-title mb-3 font-heading text-white">
-              {{ anim.name }}
-            </h3>
-            <p class="anim-desc text-muted mb-0">{{ anim.description }}</p>
+          <!-- Spotlight Follow Glow -->
+          <div class="card-spotlight"></div>
+
+          <!-- Live Canvas Animation Preview Header -->
+          <div class="card-preview-header position-relative overflow-hidden">
+            <canvas #previewCanvas [attr.data-id]="anim.id" class="card-preview-canvas"></canvas>
+            <div class="card-preview-overlay"></div>
+            <span class="badge-category position-absolute top-0 end-0 m-3 z-2">{{ anim.category }}</span>
           </div>
 
-          <div
-            class="mt-4 pt-3 border-top-glass flex items-center text-primary-glow font-medium group-hover:text-white transition-colors"
-          >
-            <span>View Demo & Code</span>
-            <i class="pi pi-arrow-right ms-2 arrow-icon"></i>
+          <!-- Card Body Content -->
+          <div class="p-4 flex-grow-1 d-flex flex-column justify-content-between">
+            <div>
+              <h3 class="anim-title mb-2 font-heading">
+                {{ anim.name }}
+              </h3>
+              <p class="anim-desc text-muted mb-0">{{ anim.description }}</p>
+            </div>
+
+            <!-- Bottom Action Bar -->
+            <div class="mt-4 pt-3 border-top-glass d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2 live-indicator">
+                <span class="live-pulse-dot"></span>
+                <span class="live-badge-text">{{ anim.badge }}</span>
+              </div>
+              <div class="action-btn-pill d-flex align-items-center gap-2">
+                <span>View Demo & Code</span>
+                <i class="pi pi-arrow-right arrow-icon"></i>
+              </div>
+            </div>
           </div>
         </div>
       </div>

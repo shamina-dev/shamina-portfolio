@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, signal } from '@angular/core';
 import { ThemeService } from '../../core/services/theme.service';
 import { Subscription } from 'rxjs';
 
@@ -6,6 +6,9 @@ interface AnimStyle {
   id: string;
   name: string;
   description: string;
+  category: string;
+  badge: string;
+  gradient: string;
 }
 
 interface Entity {
@@ -25,33 +28,97 @@ interface Entity {
   size?: number;
   angle?: number;
   vAngle?: number;
+  z?: number;
+  char?: string;
+  col?: number;
+  len?: number;
+  opacity?: number;
+  blur?: number;
+  orbitRadius?: number;
+  orbitAngle?: number;
+  orbitSpeed?: number;
 }
 
 const ANIMATIONS: AnimStyle[] = [
   {
     id: 'network',
     name: 'Network Constellation',
-    description: 'A classic tech aesthetic. Nodes drift and form geometric connections when they get close. Ideal for AI, data, and cybersecurity contexts.'
+    description: 'A classic tech aesthetic. Nodes drift and form geometric connections when they get close. Ideal for AI, data, and cybersecurity contexts.',
+    category: 'AI & Data Science',
+    badge: 'Node Physics',
+    gradient: 'linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)'
   },
   {
     id: 'gradient',
     name: 'Ambient Gradient Mesh',
-    description: 'Large, soft orbs of color slowly blending into each other. Extremely popular in modern Web3, fintech, and SaaS designs.'
+    description: 'Large, soft orbs of color slowly blending into each other. Extremely popular in modern Web3, fintech, and SaaS designs.',
+    category: 'Web3 & SaaS',
+    badge: 'Fluid Blur',
+    gradient: 'linear-gradient(135deg, #b600ff 0%, #00f2fe 100%)'
   },
   {
     id: 'ribbons',
     name: 'Flowing Ribbons',
-    description: 'Smooth, overlapping sine waves that create a sense of elegance and continuous motion. Great for corporate and enterprise sites.'
+    description: 'Smooth, overlapping sine waves that create a sense of elegance and continuous motion. Great for corporate and enterprise sites.',
+    category: 'Enterprise UI',
+    badge: 'Harmonic Waves',
+    gradient: 'linear-gradient(135deg, #00c6ff 0%, #0072ff 100%)'
   },
   {
     id: 'isometric',
     name: 'Isometric Geometry',
-    description: 'Crisp, minimalist polygons drifting slowly upwards. Gives a clean, architectural, or structural feel to any layout.'
+    description: 'Crisp, minimalist polygons drifting slowly upwards. Gives a clean, architectural, or structural feel to any layout.',
+    category: 'Architecture',
+    badge: '3D Polygons',
+    gradient: 'linear-gradient(135deg, #f39c12 0%, #e74c3c 100%)'
   },
   {
     id: 'flowfield',
     name: 'Flow Field Topography',
-    description: 'Particles moving along a mathematical noise field, leaving subtle trails. Looks like abstract wind or topographic contour maps.'
+    description: 'Particles moving along a mathematical noise field, leaving subtle trails. Looks like abstract wind or topographic contour maps.',
+    category: 'Generative Art',
+    badge: 'Noise Field',
+    gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+  },
+  {
+    id: 'starfield',
+    name: 'Starfield Warp Drive',
+    description: 'Fly through a 3D star field with depth simulation. Stars streak and accelerate toward edges for an immersive warp-speed hyperspace effect.',
+    category: 'Space & Gaming',
+    badge: '3D Warp Depth',
+    gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora Borealis',
+    description: 'Layered translucent curtains of light that blend and shift like the Northern Lights. Uses additive blending for an ethereal glow.',
+    category: 'Creative & Luxury',
+    badge: 'Ethereal Glow',
+    gradient: 'linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%)'
+  },
+  {
+    id: 'matrix',
+    name: 'Matrix Digital Rain',
+    description: 'Classic cyberpunk falling character columns. Random katakana and ASCII characters cascade in staggered green columns with depth fade.',
+    category: 'Cyberpunk',
+    badge: 'Cascade Drops',
+    gradient: 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)'
+  },
+  {
+    id: 'bokeh',
+    name: 'Bokeh Lights',
+    description: 'Soft, dreamy out-of-focus light orbs floating upward with gentle drift. Uses shadow blur for realistic cinematic lens bokeh.',
+    category: 'Cinematic & Events',
+    badge: 'Soft Lens Blur',
+    gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
+  },
+  {
+    id: 'galaxy',
+    name: 'Galaxy Spiral',
+    description: 'Thousands of particles orbiting in a logarithmic spiral pattern. Creates mesmerizing galactic arms with depth and color variation.',
+    category: 'Astrophysics',
+    badge: 'Spiral Core',
+    gradient: 'linear-gradient(135deg, #f9d423 0%, #ff4e50 100%)'
   }
 ];
 
@@ -60,7 +127,7 @@ const ANIMATIONS: AnimStyle[] = [
   templateUrl: './free-services.component.html',
   styleUrls: ['./free-services.component.scss']
 })
-export class FreeServicesComponent implements OnInit, OnDestroy {
+export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
   animations = ANIMATIONS;
   activeAnim = signal<AnimStyle | null>(null);
   speedMultiplier = signal(1.0);
@@ -74,6 +141,49 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
   isMouseOver = false;
 
   @ViewChild('bgCanvas') canvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChildren('previewCanvas') previewCanvases!: QueryList<ElementRef<HTMLCanvasElement>>;
+
+  private previewData: Map<string, {
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    width: number;
+    height: number;
+    entities: Entity[];
+    mouseX: number;
+    mouseY: number;
+    isHovered: boolean;
+  }> = new Map();
+
+  private previewAnimationFrameId?: number;
+  private lastPreviewTime = 0;
+  private previewTime = 0;
+
+  onCardMouseMove(event: MouseEvent, styleId: string) {
+    const card = event.currentTarget as HTMLElement;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    card.style.setProperty('--mouse-x', `${x}px`);
+    card.style.setProperty('--mouse-y', `${y}px`);
+
+    const pData = this.previewData.get(styleId);
+    if (pData) {
+      const canvasRect = pData.canvas.getBoundingClientRect();
+      pData.mouseX = event.clientX - canvasRect.left;
+      pData.mouseY = event.clientY - canvasRect.top;
+      pData.isHovered = true;
+    }
+  }
+
+  onCardMouseLeave(styleId: string) {
+    const pData = this.previewData.get(styleId);
+    if (pData) {
+      pData.isHovered = false;
+      pData.mouseX = pData.width / 2;
+      pData.mouseY = pData.height / 2;
+    }
+  }
 
   private ctx: CanvasRenderingContext2D | null = null;
   private width = 0;
@@ -92,16 +202,457 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
     this.themeSub = this.themeService.theme$.subscribe(() => {
       if (this.activeAnim()) {
         this.populateEntities();
+      } else {
+        this.setupPreviews();
       }
     });
   }
 
+  ngAfterViewInit() {
+    this.previewCanvases.changes.subscribe(() => {
+      this.setupPreviews();
+    });
+    setTimeout(() => this.setupPreviews(), 100);
+  }
+
   ngOnDestroy() {
     this.stopAnimation();
+    this.stopPreviewLoop();
     if (this.themeSub) {
       this.themeSub.unsubscribe();
     }
   }
+
+  private stopPreviewLoop() {
+    if (this.previewAnimationFrameId) {
+      cancelAnimationFrame(this.previewAnimationFrameId);
+      this.previewAnimationFrameId = undefined;
+    }
+  }
+
+  private setupPreviews() {
+    this.stopPreviewLoop();
+    this.previewData.clear();
+
+    if (!this.previewCanvases || this.previewCanvases.length === 0) return;
+
+    const isDark = this.themeService.isDarkMode();
+
+    this.previewCanvases.forEach(ref => {
+      const canvas = ref.nativeElement;
+      const styleId = canvas.getAttribute('data-id');
+      if (!styleId) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width || 320;
+      const h = rect.height || 150;
+      canvas.width = w;
+      canvas.height = h;
+
+      const entities = this.createPreviewEntities(styleId, w, h, isDark);
+      this.previewData.set(styleId, {
+        canvas,
+        ctx,
+        width: w,
+        height: h,
+        entities,
+        mouseX: w / 2,
+        mouseY: h / 2,
+        isHovered: false
+      });
+    });
+
+    if (this.previewData.size > 0) {
+      this.lastPreviewTime = performance.now();
+      this.previewAnimationFrameId = requestAnimationFrame(this.animatePreviews);
+    }
+  }
+
+  private createPreviewEntities(styleId: string, w: number, h: number, isDark: boolean): Entity[] {
+    const entities: Entity[] = [];
+    if (styleId === 'network') {
+      for (let i = 0; i < 22; i++) {
+        entities.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: (Math.random() - 0.5) * 0.8,
+          radius: Math.random() * 2 + 1.2
+        });
+      }
+    } else if (styleId === 'gradient') {
+      const maxDim = Math.max(w, h);
+      const color1 = isDark ? [0, 242, 254] : [2, 132, 199];
+      const color2 = isDark ? [182, 0, 255] : [139, 92, 246];
+      const color3 = isDark ? [0, 255, 196] : [13, 148, 136];
+      return [
+        { x: w * 0.2, y: h * 0.3, vx: 0.2, vy: 0.3, r: maxDim * 0.7, color: color1 },
+        { x: w * 0.8, y: h * 0.7, vx: -0.3, vy: -0.2, r: maxDim * 0.75, color: color2 },
+        { x: w * 0.5, y: h * 0.5, vx: 0.3, vy: -0.3, r: maxDim * 0.6, color: color3 }
+      ];
+    } else if (styleId === 'ribbons') {
+      for (let i = 0; i < 4; i++) {
+        const hue = isDark ? (180 + i * 25) : (200 + i * 25);
+        entities.push({
+          yOffset: h * (0.25 + i * 0.18),
+          amplitude: Math.random() * 25 + 20,
+          frequency: Math.random() * 0.008 + 0.004,
+          speed: Math.random() * 0.8 + 0.4,
+          phase: Math.random() * Math.PI * 2,
+          color: `hsla(${hue}, 85%, ${isDark ? 55 : 45}%, ${isDark ? 0.25 : 0.3})`
+        });
+      }
+    } else if (styleId === 'isometric') {
+      for (let i = 0; i < 12; i++) {
+        entities.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          sides: Math.floor(Math.random() * 4) + 3,
+          size: Math.random() * 14 + 10,
+          angle: Math.random() * Math.PI * 2,
+          vAngle: (Math.random() - 0.5) * 0.6,
+          vy: Math.random() * 20 + 10
+        });
+      }
+    } else if (styleId === 'flowfield') {
+      for (let i = 0; i < 100; i++) {
+        entities.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: 0,
+          vy: 0,
+          size: Math.random() * 1.5 + 0.8
+        });
+      }
+    } else if (styleId === 'starfield') {
+      for (let i = 0; i < 150; i++) {
+        entities.push({
+          x: (Math.random() - 0.5) * w * 2,
+          y: (Math.random() - 0.5) * h * 2,
+          z: Math.random() * w,
+          size: Math.random() * 1.2 + 0.5,
+          speed: Math.random() * 4 + 2
+        });
+      }
+    } else if (styleId === 'aurora') {
+      for (let i = 0; i < 4; i++) {
+        const hue = isDark ? (120 + i * 30) : (160 + i * 25);
+        entities.push({
+          yOffset: h * (0.2 + i * 0.15),
+          amplitude: Math.random() * 25 + 15,
+          frequency: Math.random() * 0.006 + 0.003,
+          speed: Math.random() * 0.6 + 0.3,
+          phase: Math.random() * Math.PI * 2,
+          color: `hsla(${hue}, 80%, ${isDark ? 55 : 40}%, ${isDark ? 0.2 : 0.25})`
+        });
+      }
+    } else if (styleId === 'matrix') {
+      const fontSize = 11;
+      const cols = Math.floor(w / fontSize);
+      const chars = 'アイウエオカキクケコ0123456789ABCDEF';
+      for (let i = 0; i < cols; i++) {
+        entities.push({
+          col: i,
+          y: Math.random() * -h,
+          speed: Math.random() * 40 + 30,
+          len: Math.floor(Math.random() * 10) + 5,
+          char: chars[Math.floor(Math.random() * chars.length)],
+          opacity: Math.random() * 0.6 + 0.4
+        });
+      }
+    } else if (styleId === 'bokeh') {
+      for (let i = 0; i < 16; i++) {
+        const hue = isDark ? (Math.random() * 110 + 170) : (Math.random() * 70 + 190);
+        entities.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: -(Math.random() * 0.4 + 0.1),
+          size: Math.random() * 18 + 6,
+          blur: Math.random() * 12 + 4,
+          opacity: Math.random() * 0.3 + 0.1,
+          color: `hsla(${hue}, 70%, ${isDark ? 65 : 50}%, 1)`
+        });
+      }
+    } else if (styleId === 'galaxy') {
+      const maxR = Math.min(w, h) * 0.45;
+      for (let i = 0; i < 220; i++) {
+        const arm = Math.floor(Math.random() * 3);
+        const armOffset = (arm * Math.PI * 2) / 3;
+        entities.push({
+          orbitRadius: Math.random() * maxR + 5,
+          orbitAngle: armOffset + (Math.random() - 0.5),
+          orbitSpeed: Math.random() * 0.4 + 0.15,
+          size: Math.random() * 1.5 + 0.5,
+          color: isDark
+            ? `hsla(${Math.random() * 90 + 190}, 80%, ${Math.random() * 30 + 50}%, ${Math.random() * 0.5 + 0.4})`
+            : `hsla(${Math.random() * 70 + 200}, 70%, ${Math.random() * 20 + 35}%, ${Math.random() * 0.5 + 0.5})`
+        });
+      }
+    }
+    return entities;
+  }
+
+  private animatePreviews = (now: number) => {
+    if (this.activeAnim() || this.previewData.size === 0) return;
+
+    const dt = Math.min((now - this.lastPreviewTime) / 1000, 0.1);
+    this.lastPreviewTime = now;
+    this.previewTime += dt;
+
+    const isDark = this.themeService.isDarkMode();
+
+    this.previewData.forEach((data, styleId) => {
+      const ctx = data.ctx;
+      const w = data.width;
+      const h = data.height;
+
+      if (styleId === 'flowfield') {
+        ctx.fillStyle = isDark ? 'rgba(3, 3, 8, 0.15)' : 'rgba(248, 250, 252, 0.2)';
+        ctx.fillRect(0, 0, w, h);
+      } else if (styleId === 'matrix') {
+        ctx.fillStyle = isDark ? 'rgba(3, 3, 8, 0.18)' : 'rgba(248, 250, 252, 0.22)';
+        ctx.fillRect(0, 0, w, h);
+      } else {
+        ctx.fillStyle = isDark ? '#030308' : '#f8fafc';
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      if (styleId === 'network') {
+        ctx.fillStyle = isDark ? 'rgba(0, 242, 254, 0.7)' : 'rgba(2, 132, 199, 0.8)';
+        data.entities.forEach(p => {
+          p.x! += p.vx! * (dt * 60);
+          p.y! += p.vy! * (dt * 60);
+          if (p.x! < 0 || p.x! > w) p.vx! *= -1;
+          if (p.y! < 0 || p.y! > h) p.vy! *= -1;
+          ctx.beginPath();
+          ctx.arc(p.x!, p.y!, p.radius!, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        const strokeColor = isDark ? '0, 242, 254' : '2, 132, 199';
+        for (let i = 0; i < data.entities.length; i++) {
+          for (let j = i + 1; j < data.entities.length; j++) {
+            const dx = data.entities[i].x! - data.entities[j].x!;
+            const dy = data.entities[i].y! - data.entities[j].y!;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 75) {
+              ctx.beginPath();
+              ctx.moveTo(data.entities[i].x!, data.entities[i].y!);
+              ctx.lineTo(data.entities[j].x!, data.entities[j].y!);
+              const alpha = (1 - dist / 75) * (isDark ? 0.35 : 0.45);
+              ctx.strokeStyle = `rgba(${strokeColor}, ${alpha.toFixed(2)})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+      } else if (styleId === 'gradient') {
+        data.entities.forEach(orb => {
+          orb.x! += orb.vx! * (dt * 60);
+          orb.y! += orb.vy! * (dt * 60);
+          if (orb.x! < -w * 0.2 || orb.x! > w * 1.2) orb.vx! *= -1;
+          if (orb.y! < -h * 0.2 || orb.y! > h * 1.2) orb.vy! *= -1;
+
+          const col = orb.color as number[];
+          const grad = ctx.createRadialGradient(orb.x!, orb.y!, 0, orb.x!, orb.y!, orb.r!);
+          grad.addColorStop(0, `rgba(${col[0]}, ${col[1]}, ${col[2]}, ${isDark ? 0.25 : 0.35})`);
+          grad.addColorStop(1, `rgba(${col[0]}, ${col[1]}, ${col[2]}, 0)`);
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(orb.x!, orb.y!, orb.r!, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      } else if (styleId === 'ribbons') {
+        data.entities.forEach(rib => {
+          rib.phase! += rib.speed! * dt;
+          ctx.beginPath();
+          for (let x = 0; x <= w; x += 6) {
+            let y = rib.yOffset! + Math.sin(x * rib.frequency! + rib.phase!) * rib.amplitude!;
+            if (data.isHovered) {
+              const dx = x - data.mouseX;
+              if (Math.abs(dx) < 80) {
+                const push = Math.exp(-(dx * dx) / 2500);
+                y += (data.mouseY - rib.yOffset!) * 0.4 * push;
+              }
+            }
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = rib.color as string;
+          ctx.lineWidth = 28;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        });
+      } else if (styleId === 'isometric') {
+        ctx.strokeStyle = isDark ? 'rgba(182, 0, 255, 0.5)' : 'rgba(139, 92, 246, 0.6)';
+        ctx.lineWidth = 1.2;
+        data.entities.forEach(shape => {
+          shape.y! -= shape.vy! * dt;
+          shape.angle! += shape.vAngle! * dt;
+          if (shape.y! < -30) {
+            shape.y = h + 30;
+            shape.x = Math.random() * w;
+          }
+          ctx.beginPath();
+          for (let i = 0; i < shape.sides!; i++) {
+            const angle = shape.angle! + (i * Math.PI * 2) / shape.sides!;
+            const px = shape.x! + Math.cos(angle) * shape.size!;
+            const py = shape.y! + Math.sin(angle) * shape.size!;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.stroke();
+        });
+      } else if (styleId === 'flowfield') {
+        ctx.fillStyle = isDark ? 'rgba(0, 242, 254, 0.75)' : 'rgba(2, 132, 199, 0.8)';
+        const t = this.previewTime * 0.5;
+        data.entities.forEach(p => {
+          let angle = Math.sin(p.x! * 0.01 + t) * Math.cos(p.y! * 0.01 + t) * Math.PI * 3;
+          if (data.isHovered) {
+            const dx = p.x! - data.mouseX;
+            const dy = p.y! - data.mouseY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 60) {
+              const force = (60 - dist) / 60;
+              angle = angle * (1 - force) + (Math.atan2(dy, dx) + Math.PI * 0.5) * force;
+            }
+          }
+          p.vx! = Math.cos(angle);
+          p.vy! = Math.sin(angle);
+          p.x! += p.vx! * 1.5 * (dt * 60);
+          p.y! += p.vy! * 1.5 * (dt * 60);
+          if (p.x! < 0) p.x! = w;
+          if (p.x! > w) p.x! = 0;
+          if (p.y! < 0) p.y! = h;
+          if (p.y! > h) p.y! = h;
+          ctx.beginPath();
+          ctx.arc(p.x!, p.y!, p.size!, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      } else if (styleId === 'starfield') {
+        const cx = data.isHovered ? data.mouseX : w / 2;
+        const cy = data.isHovered ? data.mouseY : h / 2;
+        data.entities.forEach(star => {
+          star.z! -= star.speed! * (dt * 60);
+          if (star.z! <= 0) {
+            star.x = (Math.random() - 0.5) * w * 2;
+            star.y = (Math.random() - 0.5) * h * 2;
+            star.z = w;
+          }
+          const sx = (star.x! / star.z!) * w * 0.5 + cx;
+          const sy = (star.y! / star.z!) * h * 0.5 + cy;
+          const sz = (1 - star.z! / w) * star.size! * 2.5;
+          if (sx < 0 || sx > w || sy < 0 || sy > h) return;
+          const alpha = (1 - star.z! / w);
+          ctx.beginPath();
+          ctx.arc(sx, sy, Math.max(sz, 0.3), 0, Math.PI * 2);
+          ctx.fillStyle = isDark
+            ? `rgba(220, 240, 255, ${alpha.toFixed(2)})`
+            : `rgba(30, 60, 120, ${(alpha * 0.8).toFixed(2)})`;
+          ctx.fill();
+        });
+      } else if (styleId === 'aurora') {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        data.entities.forEach(wave => {
+          wave.phase! += wave.speed! * dt;
+          ctx.beginPath();
+          for (let x = 0; x <= w; x += 5) {
+            let y = wave.yOffset! + Math.sin(x * wave.frequency! + wave.phase!) * wave.amplitude!;
+            if (data.isHovered) {
+              const dx = x - data.mouseX;
+              if (Math.abs(dx) < 90) {
+                const push = Math.exp(-(dx * dx) / 3000);
+                y += (data.mouseY - wave.yOffset!) * 0.3 * push;
+              }
+            }
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.lineTo(w, h);
+          ctx.lineTo(0, h);
+          ctx.closePath();
+          ctx.fillStyle = wave.color as string;
+          ctx.fill();
+        });
+        ctx.restore();
+      } else if (styleId === 'matrix') {
+        const fontSize = 11;
+        const chars = 'アイウエオカキクケコ0123456789ABCDEF';
+        ctx.font = `${fontSize}px 'Courier New', monospace`;
+        data.entities.forEach(drop => {
+          const x = drop.col! * fontSize;
+          drop.y! += drop.speed! * dt;
+          if (drop.y! > h + 30) {
+            drop.y = Math.random() * -50;
+          }
+          for (let j = 0; j < drop.len!; j++) {
+            const cy = drop.y! - j * fontSize;
+            if (cy < 0 || cy > h) continue;
+            const alpha = (1 - j / drop.len!) * drop.opacity! * (isDark ? 1 : 0.85);
+            ctx.fillStyle = j === 0
+              ? (isDark ? `rgba(180, 255, 180, ${Math.min(alpha + 0.3, 1).toFixed(2)})` : `rgba(0, 100, 60, ${Math.min(alpha + 0.3, 1).toFixed(2)})`)
+              : (isDark ? `rgba(0, 200, 70, ${alpha.toFixed(2)})` : `rgba(0, 120, 50, ${alpha.toFixed(2)})`);
+            ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, cy);
+          }
+        });
+      } else if (styleId === 'bokeh') {
+        ctx.save();
+        data.entities.forEach(orb => {
+          orb.x! += orb.vx! * (dt * 60);
+          orb.y! += orb.vy! * (dt * 60);
+          if (data.isHovered) {
+            const dx = data.mouseX - orb.x!;
+            const dy = data.mouseY - orb.y!;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 100) {
+              orb.x! += dx * 0.02;
+              orb.y! += dy * 0.02;
+            }
+          }
+          if (orb.y! < -orb.size! * 2) { orb.y = h + orb.size! * 2; orb.x = Math.random() * w; }
+          if (orb.x! < -orb.size! * 2) orb.x = w + orb.size! * 2;
+          if (orb.x! > w + orb.size! * 2) orb.x = -orb.size! * 2;
+          ctx.beginPath();
+          ctx.arc(orb.x!, orb.y!, orb.size!, 0, Math.PI * 2);
+          ctx.fillStyle = (orb.color as string).replace('1)', `${orb.opacity!.toFixed(2)})`);
+          ctx.shadowColor = orb.color as string;
+          ctx.shadowBlur = orb.blur!;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        });
+        ctx.restore();
+      } else if (styleId === 'galaxy') {
+        const gcx = data.isHovered ? w / 2 + (data.mouseX - w / 2) * 0.3 : w / 2;
+        const gcy = data.isHovered ? h / 2 + (data.mouseY - h / 2) * 0.3 : h / 2;
+        data.entities.forEach(star => {
+          star.orbitAngle! += (star.orbitSpeed! / (star.orbitRadius! * 0.15 + 5)) * dt;
+          const angle = star.orbitAngle! + star.orbitRadius! * 0.01;
+          const px = gcx + Math.cos(angle) * star.orbitRadius!;
+          const py = gcy + Math.sin(angle) * star.orbitRadius!;
+          if (px < -5 || px > w + 5 || py < -5 || py > h + 5) return;
+          ctx.beginPath();
+          ctx.arc(px, py, star.size!, 0, Math.PI * 2);
+          ctx.fillStyle = star.color as string;
+          ctx.fill();
+        });
+        const grad = ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, 35);
+        grad.addColorStop(0, isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(100, 80, 200, 0.15)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(gcx, gcy, 35, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    this.previewAnimationFrameId = requestAnimationFrame(this.animatePreviews);
+  };
 
   @HostListener('window:mousemove', ['$event'])
   onMouseMove(event: MouseEvent): void {
@@ -125,6 +676,7 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
   }
 
   selectAnimation(anim: AnimStyle) {
+    this.stopPreviewLoop();
     this.activeAnim.set(anim);
     this.speedMultiplier.set(1.0);
     
@@ -137,6 +689,7 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
   goBack() {
     this.stopAnimation();
     this.activeAnim.set(null);
+    setTimeout(() => this.setupPreviews(), 50);
   }
 
   updateSpeed(event: Event) {
@@ -242,6 +795,81 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
         });
       }
     }
+    else if (styleId === 'starfield') {
+      const count = isMobile ? 300 : 800;
+      for (let i = 0; i < count; i++) {
+        this.entities.push({
+          x: this.random(-this.width, this.width),
+          y: this.random(-this.height, this.height),
+          z: this.random(1, this.width),
+          size: this.random(0.5, 2),
+          speed: this.random(2, 8)
+        });
+      }
+    }
+    else if (styleId === 'aurora') {
+      for (let i = 0; i < 6; i++) {
+        const hue = isDark ? (120 + i * 30) : (160 + i * 25);
+        const lightness = isDark ? 55 : 40;
+        this.entities.push({
+          yOffset: this.height * (0.15 + i * 0.08),
+          amplitude: this.random(40, 120),
+          frequency: this.random(0.0008, 0.002),
+          speed: this.random(0.2, 0.6),
+          phase: this.random(0, Math.PI * 2),
+          color: `hsla(${hue}, 80%, ${lightness}%, ${isDark ? 0.08 : 0.12})`,
+          size: this.random(80, 160)
+        });
+      }
+    }
+    else if (styleId === 'matrix') {
+      const fontSize = 14;
+      const cols = Math.floor(this.width / fontSize);
+      const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+      for (let i = 0; i < cols; i++) {
+        this.entities.push({
+          col: i,
+          y: this.random(-this.height, 0),
+          speed: this.random(60, 180),
+          len: Math.floor(this.random(8, 28)),
+          char: chars[Math.floor(Math.random() * chars.length)],
+          opacity: this.random(0.5, 1)
+        });
+      }
+    }
+    else if (styleId === 'bokeh') {
+      const count = isMobile ? 20 : 50;
+      for (let i = 0; i < count; i++) {
+        const hue = isDark ? this.random(170, 280) : this.random(190, 260);
+        this.entities.push({
+          x: this.random(0, this.width),
+          y: this.random(0, this.height),
+          vx: this.random(-0.3, 0.3),
+          vy: this.random(-0.6, -0.1),
+          size: this.random(8, 50),
+          blur: this.random(10, 40),
+          opacity: this.random(0.08, 0.3),
+          color: `hsla(${hue}, 70%, ${isDark ? 65 : 50}%, 1)`
+        });
+      }
+    }
+    else if (styleId === 'galaxy') {
+      const count = isMobile ? 400 : 1200;
+      for (let i = 0; i < count; i++) {
+        const arm = Math.floor(this.random(0, 3));
+        const armOffset = (arm * Math.PI * 2) / 3;
+        const maxR = Math.min(this.width, this.height) * 0.42;
+        this.entities.push({
+          orbitRadius: this.random(10, maxR),
+          orbitAngle: armOffset + this.random(-0.5, 0.5),
+          orbitSpeed: this.random(0.1, 0.4),
+          size: this.random(0.5, 2.2),
+          color: isDark
+            ? `hsla(${this.random(190, 280)}, 80%, ${this.random(55, 80)}%, ${this.random(0.4, 0.9)})`
+            : `hsla(${this.random(200, 270)}, 70%, ${this.random(35, 55)}%, ${this.random(0.5, 0.9)})`
+        });
+      }
+    }
   }
 
   private stopAnimation() {
@@ -266,6 +894,9 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
     // Background fill based on theme
     if (styleId === 'flowfield') {
       this.ctx.fillStyle = isDark ? `rgba(3, 3, 8, 0.12)` : `rgba(248, 250, 252, 0.18)`;
+      this.ctx.fillRect(0, 0, this.width, this.height);
+    } else if (styleId === 'matrix') {
+      this.ctx.fillStyle = isDark ? `rgba(3, 3, 8, 0.15)` : `rgba(248, 250, 252, 0.2)`;
       this.ctx.fillRect(0, 0, this.width, this.height);
     } else {
       this.ctx.fillStyle = isDark ? '#030308' : '#f8fafc';
@@ -478,6 +1109,204 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
         this.ctx!.fill();
       });
     }
+    else if (styleId === 'starfield') {
+      // Vanishing point follows cursor or defaults to center
+      const cx = this.isMouseOver ? this.mouseX : this.width / 2;
+      const cy = this.isMouseOver ? this.mouseY : this.height / 2;
+
+      this.entities.forEach(star => {
+        star.z! -= star.speed! * speed * (dt * 60);
+        if (star.z! <= 0) {
+          star.x = this.random(-this.width, this.width);
+          star.y = this.random(-this.height, this.height);
+          star.z = this.width;
+        }
+
+        const sx = (star.x! / star.z!) * this.width * 0.5 + cx;
+        const sy = (star.y! / star.z!) * this.height * 0.5 + cy;
+        const sz = (1 - star.z! / this.width) * star.size! * 3;
+
+        if (sx < 0 || sx > this.width || sy < 0 || sy > this.height) return;
+
+        const alpha = (1 - star.z! / this.width);
+        this.ctx!.beginPath();
+        this.ctx!.arc(sx, sy, Math.max(sz, 0.3), 0, Math.PI * 2);
+        this.ctx!.fillStyle = isDark
+          ? `rgba(220, 240, 255, ${alpha.toFixed(2)})`
+          : `rgba(30, 60, 120, ${(alpha * 0.8).toFixed(2)})`;
+        this.ctx!.fill();
+
+        // Streak trail
+        if (sz > 0.8) {
+          const prevSx = (star.x! / (star.z! + star.speed! * 3)) * this.width * 0.5 + cx;
+          const prevSy = (star.y! / (star.z! + star.speed! * 3)) * this.height * 0.5 + cy;
+          this.ctx!.beginPath();
+          this.ctx!.moveTo(prevSx, prevSy);
+          this.ctx!.lineTo(sx, sy);
+          this.ctx!.strokeStyle = isDark
+            ? `rgba(180, 220, 255, ${(alpha * 0.5).toFixed(2)})`
+            : `rgba(30, 80, 160, ${(alpha * 0.4).toFixed(2)})`;
+          this.ctx!.lineWidth = sz * 0.6;
+          this.ctx!.stroke();
+        }
+      });
+    }
+    else if (styleId === 'aurora') {
+      this.ctx.save();
+      this.ctx.globalCompositeOperation = 'lighter';
+
+      this.entities.forEach(wave => {
+        wave.phase! += wave.speed! * speed * dt;
+
+        this.ctx!.beginPath();
+        for (let x = 0; x <= this.width; x += 8) {
+          let y = wave.yOffset! +
+            Math.sin(x * wave.frequency! + wave.phase!) * wave.amplitude! +
+            Math.sin(x * wave.frequency! * 1.8 + wave.phase! * 1.3) * wave.amplitude! * 0.4;
+
+          // Cursor aurora intensification
+          if (this.isMouseOver) {
+            const dx = x - this.mouseX;
+            const dist = Math.abs(dx);
+            if (dist < 250) {
+              const pushFactor = Math.exp(-(dx * dx) / 18000);
+              y += (this.mouseY - wave.yOffset!) * 0.35 * pushFactor;
+            }
+          }
+
+          if (x === 0) this.ctx!.moveTo(x, y);
+          else this.ctx!.lineTo(x, y);
+        }
+        this.ctx!.lineTo(this.width, this.height);
+        this.ctx!.lineTo(0, this.height);
+        this.ctx!.closePath();
+        this.ctx!.fillStyle = wave.color as string;
+        this.ctx!.fill();
+      });
+
+      this.ctx.restore();
+    }
+    else if (styleId === 'matrix') {
+      const fontSize = 14;
+      const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+      this.ctx.font = `${fontSize}px 'Courier New', monospace`;
+
+      this.entities.forEach(drop => {
+        const x = drop.col! * fontSize;
+        drop.y! += drop.speed! * speed * dt;
+
+        if (drop.y! > this.height + 50) {
+          drop.y = this.random(-200, -50);
+          drop.speed = this.random(60, 180);
+        }
+
+        // Cursor glow: characters near the mouse are brighter
+        let glowBoost = 0;
+        if (this.isMouseOver) {
+          const dx = x - this.mouseX;
+          const dy = drop.y! - this.mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            glowBoost = (150 - dist) / 150;
+            drop.speed! += glowBoost * 2;
+          }
+        }
+
+        for (let j = 0; j < drop.len!; j++) {
+          const cy = drop.y! - j * fontSize;
+          if (cy < 0 || cy > this.height) continue;
+          const fadeRatio = 1 - j / drop.len!;
+          const alpha = fadeRatio * drop.opacity! * (isDark ? 1 : 0.85) + glowBoost * 0.4;
+
+          if (j === 0) {
+            this.ctx!.fillStyle = isDark
+              ? `rgba(180, 255, 180, ${Math.min(alpha + 0.3, 1).toFixed(2)})`
+              : `rgba(0, 100, 60, ${Math.min(alpha + 0.3, 1).toFixed(2)})`;
+          } else {
+            this.ctx!.fillStyle = isDark
+              ? `rgba(0, 200, 70, ${alpha.toFixed(2)})`
+              : `rgba(0, 120, 50, ${alpha.toFixed(2)})`;
+          }
+
+          const ch = chars[Math.floor(Math.random() * chars.length)];
+          this.ctx!.fillText(ch, x, cy);
+        }
+      });
+    }
+    else if (styleId === 'bokeh') {
+      this.ctx.save();
+
+      this.entities.forEach(orb => {
+        orb.x! += orb.vx! * speed * (dt * 60);
+        orb.y! += orb.vy! * speed * (dt * 60);
+
+        // Cursor magnetic attraction
+        if (this.isMouseOver) {
+          const dx = this.mouseX - orb.x!;
+          const dy = this.mouseY - orb.y!;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 250) {
+            const force = (250 - dist) / 250 * 0.02;
+            orb.x! += dx * force;
+            orb.y! += dy * force;
+          }
+        }
+
+        // Wrap around edges
+        if (orb.y! < -orb.size! * 2) {
+          orb.y = this.height + orb.size! * 2;
+          orb.x = this.random(0, this.width);
+        }
+        if (orb.x! < -orb.size! * 2) orb.x = this.width + orb.size! * 2;
+        if (orb.x! > this.width + orb.size! * 2) orb.x = -orb.size! * 2;
+
+        this.ctx!.beginPath();
+        this.ctx!.arc(orb.x!, orb.y!, orb.size!, 0, Math.PI * 2);
+        this.ctx!.fillStyle = (orb.color as string).replace('1)', `${orb.opacity!.toFixed(2)})`);
+        this.ctx!.shadowColor = orb.color as string;
+        this.ctx!.shadowBlur = orb.blur!;
+        this.ctx!.fill();
+        this.ctx!.shadowBlur = 0;
+      });
+
+      this.ctx.restore();
+    }
+    else if (styleId === 'galaxy') {
+      // Galaxy center follows cursor or defaults to screen center
+      const gcx = this.isMouseOver
+        ? this.width / 2 + (this.mouseX - this.width / 2) * 0.3
+        : this.width / 2;
+      const gcy = this.isMouseOver
+        ? this.height / 2 + (this.mouseY - this.height / 2) * 0.3
+        : this.height / 2;
+
+      this.entities.forEach(star => {
+        star.orbitAngle! += (star.orbitSpeed! / (star.orbitRadius! * 0.1 + 10)) * speed * dt;
+
+        // Spiral: angle increases with radius for logarithmic arms
+        const spiralFactor = star.orbitRadius! * 0.008;
+        const angle = star.orbitAngle! + spiralFactor;
+
+        const px = gcx + Math.cos(angle) * star.orbitRadius!;
+        const py = gcy + Math.sin(angle) * star.orbitRadius!;
+
+        if (px < -10 || px > this.width + 10 || py < -10 || py > this.height + 10) return;
+
+        this.ctx!.beginPath();
+        this.ctx!.arc(px, py, star.size!, 0, Math.PI * 2);
+        this.ctx!.fillStyle = star.color as string;
+        this.ctx!.fill();
+      });
+
+      // Center glow
+      const gradient = this.ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, 60);
+      gradient.addColorStop(0, isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(100, 80, 200, 0.12)');
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      this.ctx.fillStyle = gradient;
+      this.ctx.beginPath();
+      this.ctx.arc(gcx, gcy, 60, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
 
     this.animationFrameId = requestAnimationFrame(this.animate);
   };
@@ -571,7 +1400,7 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = \`rgba(\${baseRgb}, \${((1 - dist/130) * alphaMult).toFixed(3)})\`;
+            ctx.strokeStyle = 'rgba(' + baseRgb + ', ' + ((1 - dist/130) * alphaMult).toFixed(3) + ')';
             ctx.lineWidth = 0.8;
             ctx.stroke();
           }
@@ -601,8 +1430,8 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
         if (orb.y < -canvas.height * 0.2 || orb.y > canvas.height * 1.2) orb.vy *= -1;
         
         const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
-        gradient.addColorStop(0, \`rgba(\${orb.color[0]}, \${orb.color[1]}, \${orb.color[2]}, ${isDark ? 0.25 : 0.35})\`);
-        gradient.addColorStop(1, \`rgba(\${orb.color[0]}, \${orb.color[1]}, \${orb.color[2]}, 0)\`);
+        gradient.addColorStop(0, 'rgba(' + orb.color[0] + ', ' + orb.color[1] + ', ' + orb.color[2] + ', ${isDark ? 0.25 : 0.35})');
+        gradient.addColorStop(1, 'rgba(' + orb.color[0] + ', ' + orb.color[1] + ', ' + orb.color[2] + ', 0)');
         
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -623,7 +1452,7 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
         frequency: Math.random() * 0.0025 + 0.001,
         speed: Math.random() * 0.8 + 0.4,
         phase: Math.random() * Math.PI * 2,
-        color: \`hsla(\${baseHue + i * 25}, 85%, \${lightness}%, \${alpha})\`
+        color: 'hsla(' + (baseHue + i * 25) + ', 85%, ' + lightness + '%, ' + alpha + ')'
       });
     }
     
@@ -736,6 +1565,219 @@ export class FreeServicesComponent implements OnInit, OnDestroy {
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
       });
+    }`,
+      starfield: `
+    // --- Simulation Setup ---
+    const stars = [];
+    const count = 800;
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: (Math.random() - 0.5) * canvas.width * 2,
+        y: (Math.random() - 0.5) * canvas.height * 2,
+        z: Math.random() * canvas.width,
+        size: Math.random() * 1.5 + 0.5,
+        speed: Math.random() * 6 + 2
+      });
+    }
+    
+    // --- Render Loop ---
+    function draw(dt) {
+      ctx.fillStyle = '${bgColor}';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      
+      stars.forEach(star => {
+        star.z -= star.speed * speedMultiplier * dt * 60;
+        if (star.z <= 0) {
+          star.x = (Math.random() - 0.5) * canvas.width * 2;
+          star.y = (Math.random() - 0.5) * canvas.height * 2;
+          star.z = canvas.width;
+        }
+        const sx = (star.x / star.z) * canvas.width * 0.5 + cx;
+        const sy = (star.y / star.z) * canvas.height * 0.5 + cy;
+        const sz = (1 - star.z / canvas.width) * star.size * 3;
+        if (sx < 0 || sx > canvas.width || sy < 0 || sy > canvas.height) return;
+        const alpha = 1 - star.z / canvas.width;
+        ctx.beginPath();
+        ctx.arc(sx, sy, Math.max(sz, 0.3), 0, Math.PI * 2);
+        ctx.fillStyle = '${isDark ? "rgba(220, 240, 255," : "rgba(30, 60, 120,"}' + alpha.toFixed(2) + ')';
+        ctx.fill();
+        if (sz > 0.8) {
+          const prevSx = (star.x / (star.z + star.speed * 3)) * canvas.width * 0.5 + cx;
+          const prevSy = (star.y / (star.z + star.speed * 3)) * canvas.height * 0.5 + cy;
+          ctx.beginPath();
+          ctx.moveTo(prevSx, prevSy);
+          ctx.lineTo(sx, sy);
+          ctx.strokeStyle = '${isDark ? "rgba(180, 220, 255," : "rgba(30, 80, 160,"}' + (alpha * 0.5).toFixed(2) + ')';
+          ctx.lineWidth = sz * 0.6;
+          ctx.stroke();
+        }
+      });
+    }`,
+      aurora: `
+    // --- Simulation Setup ---
+    const waves = [];
+    for (let i = 0; i < 6; i++) {
+      const hue = ${isDark ? 120 : 160} + i * ${isDark ? 30 : 25};
+      waves.push({
+        yOffset: canvas.height * (0.15 + i * 0.08),
+        amplitude: Math.random() * 80 + 40,
+        frequency: Math.random() * 0.0012 + 0.0008,
+        speed: Math.random() * 0.4 + 0.2,
+        phase: Math.random() * Math.PI * 2,
+        color: 'hsla(' + hue + ', 80%, ${isDark ? 55 : 40}%, ${isDark ? 0.08 : 0.12})'
+      });
+    }
+    
+    // --- Render Loop ---
+    function draw(dt) {
+      ctx.fillStyle = '${bgColor}';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      waves.forEach(wave => {
+        wave.phase += wave.speed * speedMultiplier * dt;
+        ctx.beginPath();
+        for (let x = 0; x <= canvas.width; x += 8) {
+          const y = wave.yOffset +
+            Math.sin(x * wave.frequency + wave.phase) * wave.amplitude +
+            Math.sin(x * wave.frequency * 1.8 + wave.phase * 1.3) * wave.amplitude * 0.4;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.closePath();
+        ctx.fillStyle = wave.color;
+        ctx.fill();
+      });
+      ctx.restore();
+    }`,
+      matrix: `
+    // --- Simulation Setup ---
+    const fontSize = 14;
+    const cols = Math.floor(canvas.width / fontSize);
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF';
+    const drops = [];
+    for (let i = 0; i < cols; i++) {
+      drops.push({
+        col: i,
+        y: Math.random() * -canvas.height,
+        speed: Math.random() * 120 + 60,
+        len: Math.floor(Math.random() * 20) + 8,
+        opacity: Math.random() * 0.5 + 0.5
+      });
+    }
+    
+    // --- Render Loop ---
+    function draw(dt) {
+      ctx.fillStyle = '${isDark ? "rgba(3, 3, 8, 0.15)" : "rgba(248, 250, 252, 0.2)"}';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = fontSize + "px 'Courier New', monospace";
+      drops.forEach(drop => {
+        const x = drop.col * fontSize;
+        drop.y += drop.speed * speedMultiplier * dt;
+        if (drop.y > canvas.height + 50) {
+          drop.y = Math.random() * -200 - 50;
+          drop.speed = Math.random() * 120 + 60;
+        }
+        for (let j = 0; j < drop.len; j++) {
+          const cy = drop.y - j * fontSize;
+          if (cy < 0 || cy > canvas.height) continue;
+          const fade = 1 - j / drop.len;
+          const alpha = fade * drop.opacity * ${isDark ? 1 : 0.85};
+          ctx.fillStyle = j === 0
+            ? '${isDark ? "rgba(180, 255, 180," : "rgba(0, 100, 60,"}' + Math.min(alpha + 0.3, 1).toFixed(2) + ')'
+            : '${isDark ? "rgba(0, 200, 70," : "rgba(0, 120, 50,"}' + alpha.toFixed(2) + ')';
+          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, cy);
+        }
+      });
+    }`,
+      bokeh: `
+    // --- Simulation Setup ---
+    const orbs = [];
+    for (let i = 0; i < 50; i++) {
+      const hue = Math.random() * 110 + ${isDark ? 170 : 190};
+      orbs.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: -(Math.random() * 0.5 + 0.1),
+        size: Math.random() * 42 + 8,
+        blur: Math.random() * 30 + 10,
+        opacity: Math.random() * 0.22 + 0.08,
+        color: 'hsla(' + hue + ', 70%, ${isDark ? 65 : 50}%, 1)'
+      });
+    }
+    
+    // --- Render Loop ---
+    function draw(dt) {
+      ctx.fillStyle = '${bgColor}';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      orbs.forEach(orb => {
+        orb.x += orb.vx * speedMultiplier * dt * 60;
+        orb.y += orb.vy * speedMultiplier * dt * 60;
+        if (orb.y < -orb.size * 2) { orb.y = canvas.height + orb.size * 2; orb.x = Math.random() * canvas.width; }
+        if (orb.x < -orb.size * 2) orb.x = canvas.width + orb.size * 2;
+        if (orb.x > canvas.width + orb.size * 2) orb.x = -orb.size * 2;
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, orb.size, 0, Math.PI * 2);
+        ctx.fillStyle = orb.color.replace('1)', orb.opacity.toFixed(2) + ')');
+        ctx.shadowColor = orb.color;
+        ctx.shadowBlur = orb.blur;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+      ctx.restore();
+    }`,
+      galaxy: `
+    // --- Simulation Setup ---
+    const stars = [];
+    const count = 1200;
+    for (let i = 0; i < count; i++) {
+      const arm = Math.floor(Math.random() * 3);
+      const armOffset = (arm * Math.PI * 2) / 3;
+      const maxR = Math.min(canvas.width, canvas.height) * 0.42;
+      const hue = Math.random() * 90 + ${isDark ? 190 : 200};
+      const light = Math.random() * 25 + ${isDark ? 55 : 35};
+      const alpha = Math.random() * 0.5 + 0.4;
+      stars.push({
+        orbitRadius: Math.random() * maxR + 10,
+        orbitAngle: armOffset + (Math.random() - 0.5),
+        orbitSpeed: Math.random() * 0.3 + 0.1,
+        size: Math.random() * 1.7 + 0.5,
+        color: 'hsla(' + hue + ', ${isDark ? 80 : 70}%, ' + light + '%, ' + alpha.toFixed(2) + ')'
+      });
+    }
+    
+    // --- Render Loop ---
+    function draw(dt) {
+      ctx.fillStyle = '${bgColor}';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const gcx = canvas.width / 2;
+      const gcy = canvas.height / 2;
+      
+      stars.forEach(star => {
+        star.orbitAngle += (star.orbitSpeed / (star.orbitRadius * 0.1 + 10)) * speedMultiplier * dt;
+        const angle = star.orbitAngle + star.orbitRadius * 0.008;
+        const px = gcx + Math.cos(angle) * star.orbitRadius;
+        const py = gcy + Math.sin(angle) * star.orbitRadius;
+        if (px < -10 || px > canvas.width + 10 || py < -10 || py > canvas.height + 10) return;
+        ctx.beginPath();
+        ctx.arc(px, py, star.size, 0, Math.PI * 2);
+        ctx.fillStyle = star.color;
+        ctx.fill();
+      });
+      
+      const gradient = ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, 60);
+      gradient.addColorStop(0, '${isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 80, 200, 0.12)"}');
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(gcx, gcy, 60, 0, Math.PI * 2);
+      ctx.fill();
     }`
     };
 
