@@ -122,6 +122,26 @@ const ANIMATIONS: AnimStyle[] = [
   }
 ];
 
+export interface ColorPalette {
+  id: string;
+  name: string;
+  primary: string;
+  secondary: string;
+  accent: string;
+  primaryRgb: [number, number, number];
+  secondaryRgb: [number, number, number];
+  accentRgb: [number, number, number];
+}
+
+export const COLOR_PALETTES: ColorPalette[] = [
+  { id: 'default', name: 'Default Ambient', primary: '#00f2fe', secondary: '#b600ff', accent: '#00ffc4', primaryRgb: [0, 242, 254], secondaryRgb: [182, 0, 255], accentRgb: [0, 255, 196] },
+  { id: 'cyberpunk', name: 'Cyber Neon', primary: '#00ffcc', secondary: '#ff007f', accent: '#7000ff', primaryRgb: [0, 255, 204], secondaryRgb: [255, 0, 127], accentRgb: [112, 0, 255] },
+  { id: 'cosmic', name: 'Cosmic Nebula', primary: '#a855f7', secondary: '#ec4899', accent: '#3b82f6', primaryRgb: [168, 85, 247], secondaryRgb: [236, 72, 153], accentRgb: [59, 130, 246] },
+  { id: 'emerald', name: 'Emerald Matrix', primary: '#10b981', secondary: '#06b6d4', accent: '#84cc16', primaryRgb: [16, 185, 129], secondaryRgb: [6, 182, 212], accentRgb: [132, 204, 22] },
+  { id: 'sunset', name: 'Golden Sunset', primary: '#f59e0b', secondary: '#f43f5e', accent: '#8b5cf6', primaryRgb: [245, 158, 11], secondaryRgb: [244, 63, 94], accentRgb: [139, 92, 246] },
+  { id: 'monochrome', name: 'Sleek Monochrome', primary: '#e2e8f0', secondary: '#94a3b8', accent: '#38bdf8', primaryRgb: [226, 232, 240], secondaryRgb: [148, 163, 184], accentRgb: [56, 189, 248] },
+];
+
 @Component({
   selector: 'app-free-services',
   templateUrl: './free-services.component.html',
@@ -129,8 +149,109 @@ const ANIMATIONS: AnimStyle[] = [
 })
 export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
   animations = ANIMATIONS;
+  colorPalettes = COLOR_PALETTES;
+
   activeAnim = signal<AnimStyle | null>(null);
+  
+  // Feature Settings Signals
   speedMultiplier = signal(1.0);
+  densityMultiplier = signal(1.0);
+  selectedPalette = signal<string>('default');
+  mouseMode = signal<'interact' | 'attract' | 'repel' | 'off'>('interact');
+  glowIntensity = signal(50);
+
+  showSettingsDrawer = signal(false);
+  activeSettingsTab = signal<'core' | 'style'>('core');
+
+  // Animation Specific Settings Signals
+  netLineDist = signal(130);
+  netNodeSize = signal(2.0);
+  gradBlur = signal(250);
+  gradOrbScale = signal(1.0);
+  ribbonAmp = signal(100);
+  ribbonWidth = signal(55);
+  isoShapeMode = signal<'wireframe' | 'solid' | 'glowing'>('wireframe');
+  isoRotSpeed = signal(1.0);
+  flowTrail = signal(50);
+  flowTurbulence = signal(0.006);
+  starWarp = signal(1.0);
+  starFov = signal(5.0);
+  auroraCurtains = signal(6);
+  auroraGlow = signal(12);
+  matrixFontSize = signal(14);
+  matrixSpeed = signal(1.0);
+  bokehBlur = signal(25);
+  bokehDir = signal<'up' | 'down' | 'drift'>('up');
+  galaxyArms = signal(3);
+  galaxyCore = signal(60);
+
+  get activePalette(): ColorPalette {
+    return COLOR_PALETTES.find(p => p.id === this.selectedPalette()) || COLOR_PALETTES[0];
+  }
+
+  toggleSettingsDrawer() {
+    this.showSettingsDrawer.update(v => !v);
+  }
+
+  setSettingsTab(tab: 'core' | 'style') {
+    this.activeSettingsTab.set(tab);
+  }
+
+  updateDensity(val: number) {
+    this.densityMultiplier.set(val);
+    if (this.activeAnim()) {
+      this.populateEntities();
+    }
+  }
+
+  updatePalette(paletteId: string) {
+    this.selectedPalette.set(paletteId);
+    if (this.activeAnim()) {
+      this.populateEntities();
+    }
+  }
+
+  updateMouseMode(mode: 'interact' | 'attract' | 'repel' | 'off') {
+    this.mouseMode.set(mode);
+  }
+
+  updateGlow(event: Event) {
+    const val = parseFloat((event.target as HTMLInputElement).value);
+    this.glowIntensity.set(val);
+  }
+
+  resetSettings() {
+    this.speedMultiplier.set(1.0);
+    this.densityMultiplier.set(1.0);
+    this.selectedPalette.set('default');
+    this.mouseMode.set('interact');
+    this.glowIntensity.set(50);
+
+    this.netLineDist.set(130);
+    this.netNodeSize.set(2.0);
+    this.gradBlur.set(250);
+    this.gradOrbScale.set(1.0);
+    this.ribbonAmp.set(100);
+    this.ribbonWidth.set(55);
+    this.isoShapeMode.set('wireframe');
+    this.isoRotSpeed.set(1.0);
+    this.flowTrail.set(50);
+    this.flowTurbulence.set(0.006);
+    this.starWarp.set(1.0);
+    this.starFov.set(5.0);
+    this.auroraCurtains.set(6);
+    this.auroraGlow.set(12);
+    this.matrixFontSize.set(14);
+    this.matrixSpeed.set(1.0);
+    this.bokehBlur.set(25);
+    this.bokehDir.set('up');
+    this.galaxyArms.set(3);
+    this.galaxyCore.set(60);
+
+    if (this.activeAnim()) {
+      this.populateEntities();
+    }
+  }
   
   showCodeModal = false;
   copied = false;
@@ -620,7 +741,7 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
           if (orb.x! > w + orb.size! * 2) orb.x = -orb.size! * 2;
           ctx.beginPath();
           ctx.arc(orb.x!, orb.y!, orb.size!, 0, Math.PI * 2);
-          ctx.fillStyle = (orb.color as string).replace('1)', `${orb.opacity!.toFixed(2)})`);
+          ctx.fillStyle = (orb.color as string).replace(/1\)$/, `${orb.opacity!.toFixed(2)})`);
           ctx.shadowColor = orb.color as string;
           ctx.shadowBlur = orb.blur!;
           ctx.fill();
@@ -724,53 +845,64 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     return Math.random() * (max - min) + min;
   }
 
-  private populateEntities() {
+  populateEntities() {
     this.entities = [];
     const styleId = this.activeAnim()?.id;
     const isMobile = window.innerWidth < 768;
     const isDark = this.themeService.isDarkMode();
+    const dMult = this.densityMultiplier();
+    const pal = this.activePalette;
+    const isDefaultPal = this.selectedPalette() === 'default';
 
     if (styleId === 'network') {
-      const count = isMobile ? 40 : 100;
+      const baseCount = isMobile ? 40 : 100;
+      const count = Math.floor(baseCount * dMult);
       for(let i = 0; i < count; i++) {
         this.entities.push({
           x: this.random(0, this.width),
           y: this.random(0, this.height),
           vx: this.random(-0.5, 0.5),
           vy: this.random(-0.5, 0.5),
-          radius: this.random(1, 3)
+          radius: this.random(this.netNodeSize() * 0.5, this.netNodeSize() * 1.5)
         });
       }
     } 
     else if (styleId === 'gradient') {
       const maxDim = Math.max(this.width, this.height);
-      const color1 = isDark ? [0, 242, 254] : [2, 132, 199];
-      const color2 = isDark ? [182, 0, 255] : [139, 92, 246];
-      const color3 = isDark ? [0, 255, 196] : [13, 148, 136];
+      const color1 = isDefaultPal ? (isDark ? [0, 242, 254] : [2, 132, 199]) : pal.primaryRgb;
+      const color2 = isDefaultPal ? (isDark ? [182, 0, 255] : [139, 92, 246]) : pal.secondaryRgb;
+      const color3 = isDefaultPal ? (isDark ? [0, 255, 196] : [13, 148, 136]) : pal.accentRgb;
+      const scale = this.gradOrbScale();
 
       this.entities = [
-        { x: this.width * 0.2, y: this.height * 0.3, vx: 0.3, vy: 0.4, r: maxDim * 0.6, color: color1 },
-        { x: this.width * 0.8, y: this.height * 0.7, vx: -0.4, vy: -0.3, r: maxDim * 0.7, color: color2 },
-        { x: this.width * 0.5, y: this.height * 0.5, vx: 0.5, vy: -0.5, r: maxDim * 0.5, color: color3 }
+        { x: this.width * 0.2, y: this.height * 0.3, vx: 0.3, vy: 0.4, r: maxDim * 0.6 * scale, color: color1 },
+        { x: this.width * 0.8, y: this.height * 0.7, vx: -0.4, vy: -0.3, r: maxDim * 0.7 * scale, color: color2 },
+        { x: this.width * 0.5, y: this.height * 0.5, vx: 0.5, vy: -0.5, r: maxDim * 0.5 * scale, color: color3 }
       ];
     } 
     else if (styleId === 'ribbons') {
       for(let i = 0; i < 5; i++) {
-        const hue = isDark ? (180 + i * 25) : (200 + i * 25);
-        const lightness = isDark ? 55 : 45;
-        const alpha = isDark ? 0.12 : 0.18;
+        let colorStr = '';
+        if (isDefaultPal) {
+          const hue = isDark ? (180 + i * 25) : (200 + i * 25);
+          colorStr = `hsla(${hue}, 85%, ${isDark ? 55 : 45}%, ${isDark ? 0.12 : 0.18})`;
+        } else {
+          const rgb = i % 2 === 0 ? pal.primaryRgb : pal.secondaryRgb;
+          colorStr = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${isDark ? 0.15 : 0.22})`;
+        }
         this.entities.push({
           yOffset: this.height * (0.2 + (i * 0.15)),
-          amplitude: this.random(55, 180),
+          amplitude: this.random(this.ribbonAmp() * 0.6, this.ribbonAmp() * 1.4),
           frequency: this.random(0.001, 0.0035),
           speed: this.random(0.4, 1.2),
           phase: this.random(0, Math.PI * 2),
-          color: `hsla(${hue}, 85%, ${lightness}%, ${alpha})`
+          color: colorStr
         });
       }
     } 
     else if (styleId === 'isometric') {
-      const count = isMobile ? 12 : 30;
+      const baseCount = isMobile ? 12 : 30;
+      const count = Math.floor(baseCount * dMult);
       for(let i = 0; i < count; i++) {
         this.entities.push({
           x: this.random(0, this.width),
@@ -784,7 +916,8 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     } 
     else if (styleId === 'flowfield') {
-      const count = isMobile ? 250 : 600;
+      const baseCount = isMobile ? 250 : 600;
+      const count = Math.floor(baseCount * dMult);
       for(let i = 0; i < count; i++) {
         this.entities.push({
           x: this.random(0, this.width),
@@ -796,7 +929,8 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     else if (styleId === 'starfield') {
-      const count = isMobile ? 300 : 800;
+      const baseCount = isMobile ? 300 : 800;
+      const count = Math.floor(baseCount * dMult);
       for (let i = 0; i < count; i++) {
         this.entities.push({
           x: this.random(-this.width, this.width),
@@ -808,29 +942,36 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     else if (styleId === 'aurora') {
-      for (let i = 0; i < 6; i++) {
-        const hue = isDark ? (120 + i * 30) : (160 + i * 25);
-        const lightness = isDark ? 55 : 40;
+      const curtains = this.auroraCurtains();
+      for (let i = 0; i < curtains; i++) {
+        let colorStr = '';
+        if (isDefaultPal) {
+          const hue = isDark ? (120 + i * 30) : (160 + i * 25);
+          colorStr = `hsla(${hue}, 80%, ${isDark ? 55 : 40}%, ${(this.auroraGlow() / 100).toFixed(2)})`;
+        } else {
+          const rgb = i % 3 === 0 ? pal.primaryRgb : (i % 3 === 1 ? pal.secondaryRgb : pal.accentRgb);
+          colorStr = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${(this.auroraGlow() / 100).toFixed(2)})`;
+        }
         this.entities.push({
-          yOffset: this.height * (0.15 + i * 0.08),
+          yOffset: this.height * (0.12 + i * (0.6 / curtains)),
           amplitude: this.random(40, 120),
           frequency: this.random(0.0008, 0.002),
           speed: this.random(0.2, 0.6),
           phase: this.random(0, Math.PI * 2),
-          color: `hsla(${hue}, 80%, ${lightness}%, ${isDark ? 0.08 : 0.12})`,
+          color: colorStr,
           size: this.random(80, 160)
         });
       }
     }
     else if (styleId === 'matrix') {
-      const fontSize = 14;
+      const fontSize = this.matrixFontSize();
       const cols = Math.floor(this.width / fontSize);
       const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
       for (let i = 0; i < cols; i++) {
         this.entities.push({
           col: i,
           y: this.random(-this.height, 0),
-          speed: this.random(60, 180),
+          speed: this.random(60, 180) * this.matrixSpeed(),
           len: Math.floor(this.random(8, 28)),
           char: chars[Math.floor(Math.random() * chars.length)],
           opacity: this.random(0.5, 1)
@@ -838,35 +979,53 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     else if (styleId === 'bokeh') {
-      const count = isMobile ? 20 : 50;
+      const baseCount = isMobile ? 20 : 50;
+      const count = Math.floor(baseCount * dMult);
       for (let i = 0; i < count; i++) {
-        const hue = isDark ? this.random(170, 280) : this.random(190, 260);
+        let colorStr = '';
+        if (isDefaultPal) {
+          const hue = isDark ? this.random(170, 280) : this.random(190, 260);
+          colorStr = `hsla(${hue}, 70%, ${isDark ? 65 : 50}%, 1)`;
+        } else {
+          const rgb = i % 2 === 0 ? pal.primaryRgb : pal.secondaryRgb;
+          colorStr = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 1)`;
+        }
         this.entities.push({
           x: this.random(0, this.width),
           y: this.random(0, this.height),
           vx: this.random(-0.3, 0.3),
-          vy: this.random(-0.6, -0.1),
+          vy: this.bokehDir() === 'up' ? this.random(-0.6, -0.1) : (this.bokehDir() === 'down' ? this.random(0.1, 0.6) : this.random(-0.3, 0.3)),
           size: this.random(8, 50),
-          blur: this.random(10, 40),
+          blur: this.bokehBlur(),
           opacity: this.random(0.08, 0.3),
-          color: `hsla(${hue}, 70%, ${isDark ? 65 : 50}%, 1)`
+          color: colorStr
         });
       }
     }
     else if (styleId === 'galaxy') {
-      const count = isMobile ? 400 : 1200;
+      const baseCount = isMobile ? 400 : 1200;
+      const count = Math.floor(baseCount * dMult);
+      const arms = this.galaxyArms();
+      const maxR = Math.min(this.width, this.height) * 0.42;
+
       for (let i = 0; i < count; i++) {
-        const arm = Math.floor(this.random(0, 3));
-        const armOffset = (arm * Math.PI * 2) / 3;
-        const maxR = Math.min(this.width, this.height) * 0.42;
+        const arm = Math.floor(this.random(0, arms));
+        const armOffset = (arm * Math.PI * 2) / arms;
+        let colorStr = '';
+        if (isDefaultPal) {
+          colorStr = isDark
+            ? `hsla(${this.random(190, 280)}, 80%, ${this.random(55, 80)}%, ${this.random(0.4, 0.9)})`
+            : `hsla(${this.random(200, 270)}, 70%, ${this.random(35, 55)}%, ${this.random(0.5, 0.9)})`;
+        } else {
+          const rgb = arm % 2 === 0 ? pal.primaryRgb : pal.secondaryRgb;
+          colorStr = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${this.random(0.4, 0.9)})`;
+        }
         this.entities.push({
           orbitRadius: this.random(10, maxR),
           orbitAngle: armOffset + this.random(-0.5, 0.5),
           orbitSpeed: this.random(0.1, 0.4),
           size: this.random(0.5, 2.2),
-          color: isDark
-            ? `hsla(${this.random(190, 280)}, 80%, ${this.random(55, 80)}%, ${this.random(0.4, 0.9)})`
-            : `hsla(${this.random(200, 270)}, 70%, ${this.random(35, 55)}%, ${this.random(0.5, 0.9)})`
+          color: colorStr
         });
       }
     }
@@ -890,10 +1049,15 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     const styleId = this.activeAnim()?.id;
     const speed = this.speedMultiplier();
     const isDark = this.themeService.isDarkMode();
+    const pal = this.activePalette;
+    const isDefaultPal = this.selectedPalette() === 'default';
+    const mm = this.mouseMode();
+    const glow = this.glowIntensity();
 
     // Background fill based on theme
     if (styleId === 'flowfield') {
-      this.ctx.fillStyle = isDark ? `rgba(3, 3, 8, 0.12)` : `rgba(248, 250, 252, 0.18)`;
+      const trailAlpha = (100 - this.flowTrail()) * 0.003 + 0.05;
+      this.ctx.fillStyle = isDark ? `rgba(3, 3, 8, ${trailAlpha})` : `rgba(248, 250, 252, ${trailAlpha})`;
       this.ctx.fillRect(0, 0, this.width, this.height);
     } else if (styleId === 'matrix') {
       this.ctx.fillStyle = isDark ? `rgba(3, 3, 8, 0.15)` : `rgba(248, 250, 252, 0.2)`;
@@ -904,33 +1068,48 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (styleId === 'network') {
-      const nodeColor = isDark ? 'rgba(0, 242, 254, 0.6)' : 'rgba(2, 132, 199, 0.7)';
-      const strokeColor = isDark ? 'rgba(0, 242, 254,' : 'rgba(2, 132, 199,';
+      const nodeRgb = isDefaultPal ? (isDark ? '0, 242, 254' : '2, 132, 199') : pal.primaryRgb.join(',');
+      const nodeColor = `rgba(${nodeRgb}, 0.75)`;
       
       this.ctx.fillStyle = nodeColor;
-      
+
+      if (glow > 0) {
+        this.ctx.shadowBlur = (glow / 100) * 12;
+        this.ctx.shadowColor = `rgba(${nodeRgb}, 0.8)`;
+      } else {
+        this.ctx.shadowBlur = 0;
+      }
+
       this.entities.forEach(p => {
         p.x! += p.vx! * speed * (dt * 60);
         p.y! += p.vy! * speed * (dt * 60);
         
-        // Mouse pointer interaction (push away & connect)
-        if (this.isMouseOver) {
+        // Mouse interaction
+        if (this.isMouseOver && mm !== 'off') {
           const dx = p.x! - this.mouseX;
           const dy = p.y! - this.mouseY;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 160) {
-            const force = (160 - dist) / 160;
-            p.x! += (dx / dist) * force * 3 * speed;
-            p.y! += (dy / dist) * force * 3 * speed;
+          if (dist < 180) {
+            const force = (180 - dist) / 180;
+            if (mm === 'attract') {
+              p.x! -= (dx / dist) * force * 4 * speed;
+              p.y! -= (dy / dist) * force * 4 * speed;
+            } else if (mm === 'repel') {
+              p.x! += (dx / dist) * force * 4 * speed;
+              p.y! += (dy / dist) * force * 4 * speed;
+            } else {
+              p.x! += (dx / dist) * force * 3 * speed;
+              p.y! += (dy / dist) * force * 3 * speed;
 
-            // Connection beam to cursor
-            this.ctx!.beginPath();
-            this.ctx!.moveTo(p.x!, p.y!);
-            this.ctx!.lineTo(this.mouseX, this.mouseY);
-            const alpha = (1 - dist / 160) * (isDark ? 0.35 : 0.45);
-            this.ctx!.strokeStyle = `${strokeColor} ${alpha.toFixed(3)})`;
-            this.ctx!.lineWidth = 1.1;
-            this.ctx!.stroke();
+              // Connection beam
+              this.ctx!.beginPath();
+              this.ctx!.moveTo(p.x!, p.y!);
+              this.ctx!.lineTo(this.mouseX, this.mouseY);
+              const alpha = (1 - dist / 180) * 0.45;
+              this.ctx!.strokeStyle = `rgba(${nodeRgb}, ${alpha.toFixed(3)})`;
+              this.ctx!.lineWidth = 1.1;
+              this.ctx!.stroke();
+            }
           }
         }
 
@@ -942,18 +1121,21 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
         this.ctx!.fill();
       });
 
+      this.ctx.shadowBlur = 0;
+
+      const linkDist = this.netLineDist();
       for (let i = 0; i < this.entities.length; i++) {
         for (let j = i + 1; j < this.entities.length; j++) {
           const dx = this.entities[i].x! - this.entities[j].x!;
           const dy = this.entities[i].y! - this.entities[j].y!;
           const dist = Math.sqrt(dx*dx + dy*dy);
 
-          if (dist < 130) {
-            const alphaMult = isDark ? 0.25 : 0.35;
+          if (dist < linkDist) {
+            const alphaMult = isDark ? 0.3 : 0.4;
             this.ctx.beginPath();
             this.ctx.moveTo(this.entities[i].x!, this.entities[i].y!);
             this.ctx.lineTo(this.entities[j].x!, this.entities[j].y!);
-            this.ctx.strokeStyle = `${strokeColor} ${(1 - dist/130) * alphaMult})`;
+            this.ctx.strokeStyle = `rgba(${nodeRgb}, ${((1 - dist/linkDist) * alphaMult).toFixed(3)})`;
             this.ctx.lineWidth = 0.8;
             this.ctx.stroke();
           }
@@ -961,14 +1143,13 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     } 
     else if (styleId === 'gradient') {
-      const alphaCenter = isDark ? 0.28 : 0.38;
+      const alphaCenter = isDark ? (0.2 + (glow / 100) * 0.25) : (0.3 + (glow / 100) * 0.25);
       this.entities.forEach((orb, index) => {
-        // Orb 0 smoothly follows cursor (antigravity fluid tracking)
-        if (index === 0 && this.isMouseOver) {
-          orb.x! += (this.mouseX - orb.x!) * 0.04 * speed;
-          orb.y! += (this.mouseY - orb.y!) * 0.04 * speed;
-        } else if (index === 1 && this.isMouseOver) {
-          // Counter-drift opposite to mouse for 3D parallax depth
+        if (index === 0 && this.isMouseOver && mm !== 'off') {
+          const factor = mm === 'repel' ? -0.04 : 0.04;
+          orb.x! += (this.mouseX - orb.x!) * factor * speed;
+          orb.y! += (this.mouseY - orb.y!) * factor * speed;
+        } else if (index === 1 && this.isMouseOver && mm !== 'off') {
           orb.x! += ((this.width - this.mouseX) - orb.x!) * 0.02 * speed;
           orb.y! += ((this.height - this.mouseY) - orb.y!) * 0.02 * speed;
         } else {
@@ -981,7 +1162,7 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
 
         const color = orb.color as number[];
         const gradient = this.ctx!.createRadialGradient(orb.x!, orb.y!, 0, orb.x!, orb.y!, orb.r!);
-        gradient.addColorStop(0, `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alphaCenter})`);
+        gradient.addColorStop(0, `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alphaCenter.toFixed(2)})`);
         gradient.addColorStop(1, `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0)`);
         
         this.ctx!.fillStyle = gradient;
@@ -998,13 +1179,13 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
         for (let x = 0; x <= this.width; x += 12) {
           let y = rib.yOffset! + Math.sin(x * rib.frequency! + rib.phase!) * rib.amplitude!;
 
-          // Cursor wave distortion near mouse pointer
-          if (this.isMouseOver) {
+          if (this.isMouseOver && mm !== 'off') {
             const dx = x - this.mouseX;
             const dist = Math.abs(dx);
             if (dist < 220) {
               const pushFactor = Math.exp(-(dx * dx) / 10000);
-              const mouseOffsetY = (this.mouseY - rib.yOffset!) * 0.45;
+              const dir = mm === 'repel' ? -1 : 1;
+              const mouseOffsetY = (this.mouseY - rib.yOffset!) * 0.45 * dir;
               y += mouseOffsetY * pushFactor;
             }
           }
@@ -1013,16 +1194,20 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
           else this.ctx!.lineTo(x, y);
         }
         this.ctx!.strokeStyle = rib.color as string;
-        this.ctx!.lineWidth = 55;
+        this.ctx!.lineWidth = this.ribbonWidth();
         this.ctx!.lineCap = 'round';
         this.ctx!.lineJoin = 'round';
         this.ctx!.stroke();
       });
     } 
     else if (styleId === 'isometric') {
-      const strokeColor = isDark ? 'rgba(182, 0, 255, 0.35)' : 'rgba(139, 92, 246, 0.45)';
+      const mainRgb = isDefaultPal ? (isDark ? '182, 0, 255' : '139, 92, 246') : pal.primaryRgb.join(',');
+      const strokeColor = `rgba(${mainRgb}, 0.55)`;
       this.ctx.strokeStyle = strokeColor;
       this.ctx.lineWidth = 1.2;
+
+      const mode = this.isoShapeMode();
+      const rotSpeed = this.isoRotSpeed();
 
       this.entities.forEach(shape => {
         shape.y! -= shape.vy! * speed * dt;
@@ -1030,31 +1215,21 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
         let extraRotation = 0;
         let scale = 1.0;
 
-        // Cursor proximity magnetic attraction & spin
-        if (this.isMouseOver) {
+        if (this.isMouseOver && mm !== 'off') {
           const dx = shape.x! - this.mouseX;
           const dy = shape.y! - this.mouseY;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < 180) {
             const force = (180 - dist) / 180;
-            extraRotation = force * Math.PI * 0.5;
+            extraRotation = force * Math.PI * 0.5 * (mm === 'repel' ? -1 : 1);
             scale = 1.0 + force * 0.4;
-            shape.x! += (dx / dist) * force * 2;
-
-            // Subtle magnetic beam to cursor
-            this.ctx!.beginPath();
-            this.ctx!.moveTo(shape.x!, shape.y!);
-            this.ctx!.lineTo(this.mouseX, this.mouseY);
-            this.ctx!.strokeStyle = isDark ? `rgba(0, 242, 254, ${(force * 0.3).toFixed(2)})` : `rgba(2, 132, 199, ${(force * 0.3).toFixed(2)})`;
-            this.ctx!.lineWidth = 0.8;
-            this.ctx!.stroke();
-            this.ctx!.strokeStyle = strokeColor;
-            this.ctx!.lineWidth = 1.2;
+            if (mm === 'attract') shape.x! -= (dx / dist) * force * 3;
+            else if (mm === 'repel') shape.x! += (dx / dist) * force * 3;
           }
         }
 
-        shape.angle! += (shape.vAngle! + extraRotation) * speed * dt;
+        shape.angle! += (shape.vAngle! * rotSpeed + extraRotation) * speed * dt;
         
         if (shape.y! < -100) {
           shape.y! = this.height + 100;
@@ -1071,24 +1246,35 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
           else this.ctx!.lineTo(px, py);
         }
         this.ctx!.closePath();
+
+        if (mode === 'solid') {
+          this.ctx!.fillStyle = `rgba(${mainRgb}, 0.15)`;
+          this.ctx!.fill();
+        } else if (mode === 'glowing' || glow > 40) {
+          this.ctx!.shadowBlur = (glow / 100) * 15;
+          this.ctx!.shadowColor = `rgba(${mainRgb}, 0.8)`;
+        }
+
         this.ctx!.stroke();
+        this.ctx!.shadowBlur = 0;
       });
     } 
     else if (styleId === 'flowfield') {
-      this.ctx.fillStyle = isDark ? 'rgba(0, 242, 254, 0.7)' : 'rgba(2, 132, 199, 0.75)';
+      const pRgb = isDefaultPal ? (isDark ? '0, 242, 254' : '2, 132, 199') : pal.primaryRgb.join(',');
+      this.ctx.fillStyle = `rgba(${pRgb}, 0.8)`;
       const t = this.time * 0.4 * speed;
+      const turb = this.flowTurbulence();
 
       this.entities.forEach(p => {
-        let angle = Math.sin(p.x! * 0.006 + t) * Math.cos(p.y! * 0.006 + t) * Math.PI * 3.5;
+        let angle = Math.sin(p.x! * turb + t) * Math.cos(p.y! * turb + t) * Math.PI * 3.5;
         
-        // Swirling vortex near cursor
-        if (this.isMouseOver) {
+        if (this.isMouseOver && mm !== 'off') {
           const dx = p.x! - this.mouseX;
           const dy = p.y! - this.mouseY;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 180) {
             const force = (180 - dist) / 180;
-            const vortexAngle = Math.atan2(dy, dx) + Math.PI * 0.5;
+            const vortexAngle = Math.atan2(dy, dx) + (mm === 'repel' ? -Math.PI * 0.5 : Math.PI * 0.5);
             angle = angle * (1 - force) + vortexAngle * force;
           }
         }
@@ -1110,20 +1296,22 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     }
     else if (styleId === 'starfield') {
-      // Vanishing point follows cursor or defaults to center
-      const cx = this.isMouseOver ? this.mouseX : this.width / 2;
-      const cy = this.isMouseOver ? this.mouseY : this.height / 2;
+      const cx = (this.isMouseOver && mm !== 'off') ? this.mouseX : this.width / 2;
+      const cy = (this.isMouseOver && mm !== 'off') ? this.mouseY : this.height / 2;
+      const warp = this.starWarp();
+      const fov = this.starFov();
+      const sRgb = isDefaultPal ? (isDark ? '220, 240, 255' : '30, 60, 120') : pal.primaryRgb.join(',');
 
       this.entities.forEach(star => {
-        star.z! -= star.speed! * speed * (dt * 60);
+        star.z! -= star.speed! * speed * warp * (dt * 60);
         if (star.z! <= 0) {
           star.x = this.random(-this.width, this.width);
           star.y = this.random(-this.height, this.height);
           star.z = this.width;
         }
 
-        const sx = (star.x! / star.z!) * this.width * 0.5 + cx;
-        const sy = (star.y! / star.z!) * this.height * 0.5 + cy;
+        const sx = (star.x! / star.z!) * this.width * (fov / 10) + cx;
+        const sy = (star.y! / star.z!) * this.height * (fov / 10) + cy;
         const sz = (1 - star.z! / this.width) * star.size! * 3;
 
         if (sx < 0 || sx > this.width || sy < 0 || sy > this.height) return;
@@ -1131,21 +1319,16 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
         const alpha = (1 - star.z! / this.width);
         this.ctx!.beginPath();
         this.ctx!.arc(sx, sy, Math.max(sz, 0.3), 0, Math.PI * 2);
-        this.ctx!.fillStyle = isDark
-          ? `rgba(220, 240, 255, ${alpha.toFixed(2)})`
-          : `rgba(30, 60, 120, ${(alpha * 0.8).toFixed(2)})`;
+        this.ctx!.fillStyle = `rgba(${sRgb}, ${alpha.toFixed(2)})`;
         this.ctx!.fill();
 
-        // Streak trail
         if (sz > 0.8) {
-          const prevSx = (star.x! / (star.z! + star.speed! * 3)) * this.width * 0.5 + cx;
-          const prevSy = (star.y! / (star.z! + star.speed! * 3)) * this.height * 0.5 + cy;
+          const prevSx = (star.x! / (star.z! + star.speed! * 3 * warp)) * this.width * (fov / 10) + cx;
+          const prevSy = (star.y! / (star.z! + star.speed! * 3 * warp)) * this.height * (fov / 10) + cy;
           this.ctx!.beginPath();
           this.ctx!.moveTo(prevSx, prevSy);
           this.ctx!.lineTo(sx, sy);
-          this.ctx!.strokeStyle = isDark
-            ? `rgba(180, 220, 255, ${(alpha * 0.5).toFixed(2)})`
-            : `rgba(30, 80, 160, ${(alpha * 0.4).toFixed(2)})`;
+          this.ctx!.strokeStyle = `rgba(${sRgb}, ${(alpha * 0.5).toFixed(2)})`;
           this.ctx!.lineWidth = sz * 0.6;
           this.ctx!.stroke();
         }
@@ -1164,13 +1347,13 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
             Math.sin(x * wave.frequency! + wave.phase!) * wave.amplitude! +
             Math.sin(x * wave.frequency! * 1.8 + wave.phase! * 1.3) * wave.amplitude! * 0.4;
 
-          // Cursor aurora intensification
-          if (this.isMouseOver) {
+          if (this.isMouseOver && mm !== 'off') {
             const dx = x - this.mouseX;
             const dist = Math.abs(dx);
             if (dist < 250) {
               const pushFactor = Math.exp(-(dx * dx) / 18000);
-              y += (this.mouseY - wave.yOffset!) * 0.35 * pushFactor;
+              const dir = mm === 'repel' ? -1 : 1;
+              y += (this.mouseY - wave.yOffset!) * 0.35 * pushFactor * dir;
             }
           }
 
@@ -1187,9 +1370,11 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       this.ctx.restore();
     }
     else if (styleId === 'matrix') {
-      const fontSize = 14;
+      const fontSize = this.matrixFontSize();
       const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
       this.ctx.font = `${fontSize}px 'Courier New', monospace`;
+
+      const mRgb = isDefaultPal ? (isDark ? '0, 200, 70' : '0, 120, 50') : pal.primaryRgb.join(',');
 
       this.entities.forEach(drop => {
         const x = drop.col! * fontSize;
@@ -1197,12 +1382,11 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
 
         if (drop.y! > this.height + 50) {
           drop.y = this.random(-200, -50);
-          drop.speed = this.random(60, 180);
+          drop.speed = this.random(60, 180) * this.matrixSpeed();
         }
 
-        // Cursor glow: characters near the mouse are brighter
         let glowBoost = 0;
-        if (this.isMouseOver) {
+        if (this.isMouseOver && mm !== 'off') {
           const dx = x - this.mouseX;
           const dy = drop.y! - this.mouseY;
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -1219,13 +1403,9 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
           const alpha = fadeRatio * drop.opacity! * (isDark ? 1 : 0.85) + glowBoost * 0.4;
 
           if (j === 0) {
-            this.ctx!.fillStyle = isDark
-              ? `rgba(180, 255, 180, ${Math.min(alpha + 0.3, 1).toFixed(2)})`
-              : `rgba(0, 100, 60, ${Math.min(alpha + 0.3, 1).toFixed(2)})`;
+            this.ctx!.fillStyle = `rgba(220, 255, 220, ${Math.min(alpha + 0.3, 1).toFixed(2)})`;
           } else {
-            this.ctx!.fillStyle = isDark
-              ? `rgba(0, 200, 70, ${alpha.toFixed(2)})`
-              : `rgba(0, 120, 50, ${alpha.toFixed(2)})`;
+            this.ctx!.fillStyle = `rgba(${mRgb}, ${alpha.toFixed(2)})`;
           }
 
           const ch = chars[Math.floor(Math.random() * chars.length)];
@@ -1240,19 +1420,18 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
         orb.x! += orb.vx! * speed * (dt * 60);
         orb.y! += orb.vy! * speed * (dt * 60);
 
-        // Cursor magnetic attraction
-        if (this.isMouseOver) {
+        if (this.isMouseOver && mm !== 'off') {
           const dx = this.mouseX - orb.x!;
           const dy = this.mouseY - orb.y!;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 250) {
-            const force = (250 - dist) / 250 * 0.02;
+            const dir = mm === 'repel' ? -1 : 1;
+            const force = (250 - dist) / 250 * 0.02 * dir;
             orb.x! += dx * force;
             orb.y! += dy * force;
           }
         }
 
-        // Wrap around edges
         if (orb.y! < -orb.size! * 2) {
           orb.y = this.height + orb.size! * 2;
           orb.x = this.random(0, this.width);
@@ -1262,9 +1441,11 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.ctx!.beginPath();
         this.ctx!.arc(orb.x!, orb.y!, orb.size!, 0, Math.PI * 2);
-        this.ctx!.fillStyle = (orb.color as string).replace('1)', `${orb.opacity!.toFixed(2)})`);
-        this.ctx!.shadowColor = orb.color as string;
-        this.ctx!.shadowBlur = orb.blur!;
+        this.ctx!.fillStyle = (orb.color as string).replace(/1\)$/, `${orb.opacity!.toFixed(2)})`);
+        if (glow > 0) {
+          this.ctx!.shadowColor = orb.color as string;
+          this.ctx!.shadowBlur = orb.blur! * (glow / 50);
+        }
         this.ctx!.fill();
         this.ctx!.shadowBlur = 0;
       });
@@ -1272,18 +1453,16 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       this.ctx.restore();
     }
     else if (styleId === 'galaxy') {
-      // Galaxy center follows cursor or defaults to screen center
-      const gcx = this.isMouseOver
-        ? this.width / 2 + (this.mouseX - this.width / 2) * 0.3
+      const gcx = (this.isMouseOver && mm !== 'off')
+        ? this.width / 2 + (this.mouseX - this.width / 2) * 0.3 * (mm === 'repel' ? -1 : 1)
         : this.width / 2;
-      const gcy = this.isMouseOver
-        ? this.height / 2 + (this.mouseY - this.height / 2) * 0.3
+      const gcy = (this.isMouseOver && mm !== 'off')
+        ? this.height / 2 + (this.mouseY - this.height / 2) * 0.3 * (mm === 'repel' ? -1 : 1)
         : this.height / 2;
 
       this.entities.forEach(star => {
         star.orbitAngle! += (star.orbitSpeed! / (star.orbitRadius! * 0.1 + 10)) * speed * dt;
 
-        // Spiral: angle increases with radius for logarithmic arms
         const spiralFactor = star.orbitRadius! * 0.008;
         const angle = star.orbitAngle! + spiralFactor;
 
@@ -1298,13 +1477,14 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
         this.ctx!.fill();
       });
 
-      // Center glow
-      const gradient = this.ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, 60);
-      gradient.addColorStop(0, isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(100, 80, 200, 0.12)');
+      const coreR = this.galaxyCore();
+      const cRgb = isDefaultPal ? (isDark ? '255, 255, 255' : '100, 80, 200') : pal.primaryRgb.join(',');
+      const gradient = this.ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, coreR);
+      gradient.addColorStop(0, `rgba(${cRgb}, 0.25)`);
       gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
       this.ctx.fillStyle = gradient;
       this.ctx.beginPath();
-      this.ctx.arc(gcx, gcy, 60, 0, Math.PI * 2);
+      this.ctx.arc(gcx, gcy, coreR, 0, Math.PI * 2);
       this.ctx.fill();
     }
 
