@@ -37,6 +37,11 @@ interface Entity {
   orbitRadius?: number;
   orbitAngle?: number;
   orbitSpeed?: number;
+  scatterX?: number;
+  scatterY?: number;
+  type?: string;
+  twinklePhase?: number;
+  twinkleSpeed?: number;
 }
 
 const ANIMATIONS: AnimStyle[] = [
@@ -115,10 +120,10 @@ const ANIMATIONS: AnimStyle[] = [
   {
     id: 'galaxy',
     name: 'Galaxy Spiral',
-    description: 'Thousands of particles orbiting in a logarithmic spiral pattern. Creates mesmerizing galactic arms with depth and color variation.',
+    description: 'Upgraded particle spiral galaxy with glowing logarithmic arms, smooth orbital spin, and bright central core.',
     category: 'Astrophysics',
     badge: 'Spiral Core',
-    gradient: 'linear-gradient(135deg, #f9d423 0%, #ff4e50 100%)'
+    gradient: 'linear-gradient(135deg, #a855f7 0%, #00f2fe 100%)'
   }
 ];
 
@@ -182,8 +187,9 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
   matrixSpeed = signal(1.0);
   bokehBlur = signal(25);
   bokehDir = signal<'up' | 'down' | 'drift'>('up');
-  galaxyArms = signal(3);
-  galaxyCore = signal(60);
+  galaxyArms = signal(4);
+  galaxyCore = signal(65);
+  galaxySpin = signal(1.0);
 
   get activePalette(): ColorPalette {
     return COLOR_PALETTES.find(p => p.id === this.selectedPalette()) || COLOR_PALETTES[0];
@@ -245,8 +251,9 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.matrixSpeed.set(1.0);
     this.bokehBlur.set(25);
     this.bokehDir.set('up');
-    this.galaxyArms.set(3);
-    this.galaxyCore.set(60);
+    this.galaxyArms.set(4);
+    this.galaxyCore.set(65);
+    this.galaxySpin.set(1.0);
 
     if (this.activeAnim()) {
       this.populateEntities();
@@ -499,18 +506,22 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       }
     } else if (styleId === 'galaxy') {
-      const maxR = Math.min(w, h) * 0.45;
-      for (let i = 0; i < 220; i++) {
-        const arm = Math.floor(Math.random() * 3);
-        const armOffset = (arm * Math.PI * 2) / 3;
+      const maxR = Math.min(w, h) * 0.42;
+      const arms = 4;
+      for (let i = 0; i < 200; i++) {
+        const arm = Math.floor(Math.random() * arms);
+        const armOffset = (arm * Math.PI * 2) / arms;
+        const radius = Math.random() * maxR + 5;
+        const scatter = (Math.random() - 0.5) * (8 + radius * 0.1);
+        const hue = isDark ? 190 + (radius / maxR) * 90 : 200 + (radius / maxR) * 70;
         entities.push({
-          orbitRadius: Math.random() * maxR + 5,
-          orbitAngle: armOffset + (Math.random() - 0.5),
-          orbitSpeed: Math.random() * 0.4 + 0.15,
-          size: Math.random() * 1.5 + 0.5,
-          color: isDark
-            ? `hsla(${Math.random() * 90 + 190}, 80%, ${Math.random() * 30 + 50}%, ${Math.random() * 0.5 + 0.4})`
-            : `hsla(${Math.random() * 70 + 200}, 70%, ${Math.random() * 20 + 35}%, ${Math.random() * 0.5 + 0.5})`
+          orbitRadius: radius,
+          orbitAngle: armOffset + (Math.random() - 0.5) * 0.3,
+          orbitSpeed: (0.35 + Math.random() * 0.2) / (1 + radius * 0.02),
+          scatterX: scatter,
+          scatterY: scatter * 0.5,
+          size: Math.random() * 1.6 + 0.6,
+          color: `hsla(${hue}, 85%, ${isDark ? 65 : 45}%, ${Math.random() * 0.5 + 0.45})`
         });
       }
     }
@@ -749,21 +760,25 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         ctx.restore();
       } else if (styleId === 'galaxy') {
-        const gcx = data.isHovered ? w / 2 + (data.mouseX - w / 2) * 0.3 : w / 2;
-        const gcy = data.isHovered ? h / 2 + (data.mouseY - h / 2) * 0.3 : h / 2;
+        const gcx = data.isHovered ? w / 2 + (data.mouseX - w / 2) * 0.25 : w / 2;
+        const gcy = data.isHovered ? h / 2 + (data.mouseY - h / 2) * 0.25 : h / 2;
+
         data.entities.forEach(star => {
-          star.orbitAngle! += (star.orbitSpeed! / (star.orbitRadius! * 0.15 + 5)) * dt;
+          star.orbitAngle! += (star.orbitSpeed! / (star.orbitRadius! * 0.1 + 10)) * dt;
           const angle = star.orbitAngle! + star.orbitRadius! * 0.01;
-          const px = gcx + Math.cos(angle) * star.orbitRadius!;
-          const py = gcy + Math.sin(angle) * star.orbitRadius!;
-          if (px < -5 || px > w + 5 || py < -5 || py > h + 5) return;
+          const px = gcx + Math.cos(angle) * star.orbitRadius! + (star.scatterX || 0);
+          const py = gcy + Math.sin(angle) * star.orbitRadius! * 0.65 + (star.scatterY || 0);
+
+          if (px < -10 || px > w + 10 || py < -10 || py > h + 10) return;
+
           ctx.beginPath();
           ctx.arc(px, py, star.size!, 0, Math.PI * 2);
           ctx.fillStyle = star.color as string;
           ctx.fill();
         });
+
         const grad = ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, 35);
-        grad.addColorStop(0, isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(100, 80, 200, 0.15)');
+        grad.addColorStop(0, isDark ? 'rgba(0, 242, 254, 0.4)' : 'rgba(120, 70, 255, 0.35)');
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -1003,28 +1018,33 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     else if (styleId === 'galaxy') {
-      const baseCount = isMobile ? 400 : 1200;
+      const baseCount = isMobile ? 500 : 1200;
       const count = Math.floor(baseCount * dMult);
       const arms = this.galaxyArms();
-      const maxR = Math.min(this.width, this.height) * 0.42;
+      const maxR = Math.min(this.width, this.height) * 0.44;
 
       for (let i = 0; i < count; i++) {
         const arm = Math.floor(this.random(0, arms));
         const armOffset = (arm * Math.PI * 2) / arms;
+        const radius = this.random(5, maxR);
+        const scatter = this.random(-1, 1) * (10 + radius * 0.12);
+
         let colorStr = '';
         if (isDefaultPal) {
-          colorStr = isDark
-            ? `hsla(${this.random(190, 280)}, 80%, ${this.random(55, 80)}%, ${this.random(0.4, 0.9)})`
-            : `hsla(${this.random(200, 270)}, 70%, ${this.random(35, 55)}%, ${this.random(0.5, 0.9)})`;
+          const hue = isDark ? 190 + (radius / maxR) * 90 : 200 + (radius / maxR) * 70;
+          colorStr = `hsla(${hue}, 85%, ${isDark ? this.random(55, 80) : this.random(35, 60)}%, ${this.random(0.4, 0.9)})`;
         } else {
           const rgb = arm % 2 === 0 ? pal.primaryRgb : pal.secondaryRgb;
           colorStr = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${this.random(0.4, 0.9)})`;
         }
+
         this.entities.push({
-          orbitRadius: this.random(10, maxR),
-          orbitAngle: armOffset + this.random(-0.5, 0.5),
-          orbitSpeed: this.random(0.1, 0.4),
-          size: this.random(0.5, 2.2),
+          orbitRadius: radius,
+          orbitAngle: armOffset + this.random(-0.35, 0.35),
+          orbitSpeed: (0.35 + this.random(0, 0.25)) / (1 + radius * 0.015),
+          scatterX: scatter,
+          scatterY: scatter * 0.55,
+          size: this.random(0.6, 2.2),
           color: colorStr
         });
       }
@@ -1454,22 +1474,27 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     else if (styleId === 'galaxy') {
       const gcx = (this.isMouseOver && mm !== 'off')
-        ? this.width / 2 + (this.mouseX - this.width / 2) * 0.3 * (mm === 'repel' ? -1 : 1)
+        ? this.width / 2 + (this.mouseX - this.width / 2) * 0.25 * (mm === 'repel' ? -1 : 1)
         : this.width / 2;
       const gcy = (this.isMouseOver && mm !== 'off')
-        ? this.height / 2 + (this.mouseY - this.height / 2) * 0.3 * (mm === 'repel' ? -1 : 1)
+        ? this.height / 2 + (this.mouseY - this.height / 2) * 0.25 * (mm === 'repel' ? -1 : 1)
         : this.height / 2;
 
-      this.entities.forEach(star => {
-        star.orbitAngle! += (star.orbitSpeed! / (star.orbitRadius! * 0.1 + 10)) * speed * dt;
+      const totalSpin = speed * this.galaxySpin();
 
-        const spiralFactor = star.orbitRadius! * 0.008;
+      this.entities.forEach(star => {
+        star.orbitAngle! += (star.orbitSpeed! / (star.orbitRadius! * 0.08 + 12)) * totalSpin * dt;
+
+        const spiralFactor = star.orbitRadius! * 0.009;
         const angle = star.orbitAngle! + spiralFactor;
 
-        const px = gcx + Math.cos(angle) * star.orbitRadius!;
-        const py = gcy + Math.sin(angle) * star.orbitRadius!;
+        let rx = Math.cos(angle) * star.orbitRadius! + (star.scatterX || 0);
+        let ry = Math.sin(angle) * star.orbitRadius! * 0.7 + (star.scatterY || 0);
 
-        if (px < -10 || px > this.width + 10 || py < -10 || py > this.height + 10) return;
+        const px = gcx + rx;
+        const py = gcy + ry;
+
+        if (px < -20 || px > this.width + 20 || py < -20 || py > this.height + 20) return;
 
         this.ctx!.beginPath();
         this.ctx!.arc(px, py, star.size!, 0, Math.PI * 2);
@@ -1478,9 +1503,13 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       const coreR = this.galaxyCore();
-      const cRgb = isDefaultPal ? (isDark ? '255, 255, 255' : '100, 80, 200') : pal.primaryRgb.join(',');
+      const primaryRgbStr = isDefaultPal
+        ? (isDark ? '0, 242, 254' : '100, 80, 250')
+        : pal.primaryRgb.join(',');
+
       const gradient = this.ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, coreR);
-      gradient.addColorStop(0, `rgba(${cRgb}, 0.25)`);
+      gradient.addColorStop(0, `rgba(${primaryRgbStr}, 0.5)`);
+      gradient.addColorStop(0.5, `rgba(${primaryRgbStr}, 0.15)`);
       gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
       this.ctx.fillStyle = gradient;
       this.ctx.beginPath();
@@ -1913,22 +1942,28 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       ctx.restore();
     }`,
       galaxy: `
-    // --- Simulation Setup ---
+    // --- Animated Spiral Galaxy Setup ---
     const stars = [];
     const count = 1200;
+    const arms = ${this.galaxyArms()};
+    const maxR = Math.min(canvas.width, canvas.height) * 0.44;
+    
     for (let i = 0; i < count; i++) {
-      const arm = Math.floor(Math.random() * 3);
-      const armOffset = (arm * Math.PI * 2) / 3;
-      const maxR = Math.min(canvas.width, canvas.height) * 0.42;
-      const hue = Math.random() * 90 + ${isDark ? 190 : 200};
-      const light = Math.random() * 25 + ${isDark ? 55 : 35};
+      const arm = Math.floor(Math.random() * arms);
+      const armOffset = (arm * Math.PI * 2) / arms;
+      const radius = Math.random() * maxR + 5;
+      const scatter = (Math.random() - 0.5) * (10 + radius * 0.12);
+      const hue = Math.random() * 80 + ${isDark ? 190 : 200};
       const alpha = Math.random() * 0.5 + 0.4;
+      
       stars.push({
-        orbitRadius: Math.random() * maxR + 10,
-        orbitAngle: armOffset + (Math.random() - 0.5),
-        orbitSpeed: Math.random() * 0.3 + 0.1,
-        size: Math.random() * 1.7 + 0.5,
-        color: 'hsla(' + hue + ', ${isDark ? 80 : 70}%, ' + light + '%, ' + alpha.toFixed(2) + ')'
+        orbitRadius: radius,
+        orbitAngle: armOffset + (Math.random() - 0.5) * 0.35,
+        orbitSpeed: (0.35 + Math.random() * 0.25) / (1 + radius * 0.015),
+        scatterX: scatter,
+        scatterY: scatter * 0.55,
+        size: Math.random() * 1.8 + 0.5,
+        color: 'hsla(' + hue + ', 85%, ' + (Math.random() * 30 + ${isDark ? 55 : 35}) + '%, ' + alpha.toFixed(2) + ')'
       });
     }
     
@@ -1940,23 +1975,28 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       const gcy = canvas.height / 2;
       
       stars.forEach(star => {
-        star.orbitAngle += (star.orbitSpeed / (star.orbitRadius * 0.1 + 10)) * speedMultiplier * dt;
-        const angle = star.orbitAngle + star.orbitRadius * 0.008;
-        const px = gcx + Math.cos(angle) * star.orbitRadius;
-        const py = gcy + Math.sin(angle) * star.orbitRadius;
-        if (px < -10 || px > canvas.width + 10 || py < -10 || py > canvas.height + 10) return;
+        star.orbitAngle += (star.orbitSpeed / (star.orbitRadius * 0.08 + 12)) * ${this.galaxySpin()} * speedMultiplier * dt;
+        const angle = star.orbitAngle + star.orbitRadius * 0.009;
+        const rx = Math.cos(angle) * star.orbitRadius + star.scatterX;
+        const ry = Math.sin(angle) * star.orbitRadius * 0.7 + star.scatterY;
+        const px = gcx + rx;
+        const py = gcy + ry;
+        
+        if (px < -20 || px > canvas.width + 20 || py < -20 || py > canvas.height + 20) return;
+        
         ctx.beginPath();
         ctx.arc(px, py, star.size, 0, Math.PI * 2);
         ctx.fillStyle = star.color;
         ctx.fill();
       });
       
-      const gradient = ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, 60);
-      gradient.addColorStop(0, '${isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 80, 200, 0.12)"}');
+      const coreR = ${this.galaxyCore()};
+      const gradient = ctx.createRadialGradient(gcx, gcy, 0, gcx, gcy, coreR);
+      gradient.addColorStop(0, '${isDark ? "rgba(0, 242, 254, 0.45)" : "rgba(100, 80, 200, 0.35)"}');
       gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.arc(gcx, gcy, 60, 0, Math.PI * 2);
+      ctx.arc(gcx, gcy, coreR, 0, Math.PI * 2);
       ctx.fill();
     }`
     };

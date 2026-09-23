@@ -675,9 +675,10 @@
 
           <!-- Galaxy Spiral -->
           <div *ngIf="activeAnim()?.id === 'galaxy'">
+            <!-- Galactic Arms Count -->
             <div class="setting-group mb-4">
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <label class="setting-label text-white">Galactic Arms Count</label>
+                <label class="setting-label text-white">Galactic Arms</label>
                 <span class="setting-val-badge">{{ galaxyArms() }} arms</span>
               </div>
               <div class="d-flex gap-2 mb-2">
@@ -687,6 +688,25 @@
                 <button (click)="galaxyArms.set(5); populateEntities()" class="preset-pill flex-grow-1" [class.active]="galaxyArms() === 5">5 Arms</button>
               </div>
             </div>
+
+            <!-- Spin Velocity Slider -->
+            <div class="setting-group mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="setting-label text-white">Spin Velocity</label>
+                <span class="setting-val-badge">{{ galaxySpin().toFixed(1) }}x</span>
+              </div>
+              <input
+                type="range"
+                min="0.2"
+                max="3.0"
+                step="0.1"
+                [value]="galaxySpin()"
+                (input)="galaxySpin.set(+($any($event.target).value))"
+                class="form-range custom-range w-100"
+              />
+            </div>
+
+            <!-- Core Glow Radius Slider -->
             <div class="setting-group mb-4">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <label class="setting-label text-white">Core Glow Radius</label>
