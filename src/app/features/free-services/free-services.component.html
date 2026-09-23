@@ -21,8 +21,7 @@
       <div class="col-md-6 col-lg-4" *ngFor="let anim of animations">
         <div
           (click)="selectAnimation(anim)"
-          (mousemove)="onCardMouseMove($event, anim.id)"
-          (mouseleave)="onCardMouseLeave(anim.id)"
+          [attr.data-card-id]="anim.id"
           class="anim-card glass-card h-100 d-flex flex-column justify-content-between cursor-pointer"
         >
           <!-- Spotlight Follow Glow -->

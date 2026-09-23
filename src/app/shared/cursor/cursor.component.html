@@ -1,0 +1,25 @@
+<div class="custom-cursor-container" aria-hidden="true">
+  <!-- Dynamic Stardust Particle Trail Canvas -->
+  <canvas #trailCanvas class="cursor-trail-canvas"></canvas>
+
+  <!-- Smooth Lerp Outer Ring / Halo -->
+  <div #cursorRing class="cursor-ring">
+    <div class="ring-gradient-border"></div>
+    <div class="ring-glow-core"></div>
+    <div class="ring-orbit-dot"></div>
+  </div>
+
+  <!-- Instantaneous Neon Pointer Dot -->
+  <div #cursorDot class="cursor-dot">
+    <div class="dot-inner"></div>
+    <div class="dot-pulse"></div>
+  </div>
+
+  <!-- Click Shockwave Ripples -->
+  <div
+    *ngFor="let rip of ripples"
+    class="cursor-ripple"
+    [style.left.px]="rip.x"
+    [style.top.px]="rip.y"
+  ></div>
+</div>

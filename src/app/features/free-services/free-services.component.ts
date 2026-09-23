@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, signal, NgZone } from '@angular/core';
 import { ThemeService } from '../../core/services/theme.service';
 import { Subscription } from 'rxjs';
 
@@ -324,7 +324,28 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private resizeListener = () => this.resizeCanvas();
 
-  constructor(public themeService: ThemeService) {}
+  private onMouseMovePassive = (event: MouseEvent) => {
+    this.mouseX = event.clientX;
+    this.mouseY = event.clientY;
+    this.isMouseOver = true;
+  };
+
+  private onMouseLeavePassive = () => {
+    this.isMouseOver = false;
+  };
+
+  private onTouchMovePassive = (event: TouchEvent) => {
+    if (event.touches.length > 0) {
+      this.mouseX = event.touches[0].clientX;
+      this.mouseY = event.touches[0].clientY;
+      this.isMouseOver = true;
+    }
+  };
+
+  constructor(
+    public themeService: ThemeService,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit() {
     this.themeSub = this.themeService.theme$.subscribe(() => {
@@ -337,6 +358,12 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    this.ngZone.runOutsideAngular(() => {
+      window.addEventListener('mousemove', this.onMouseMovePassive, { passive: true });
+      window.addEventListener('mouseleave', this.onMouseLeavePassive, { passive: true });
+      window.addEventListener('touchmove', this.onTouchMovePassive, { passive: true });
+    });
+
     this.previewCanvases.changes.subscribe(() => {
       this.setupPreviews();
     });
@@ -349,6 +376,9 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.themeSub) {
       this.themeSub.unsubscribe();
     }
+    window.removeEventListener('mousemove', this.onMouseMovePassive);
+    window.removeEventListener('mouseleave', this.onMouseLeavePassive);
+    window.removeEventListener('touchmove', this.onTouchMovePassive);
   }
 
   private stopPreviewLoop() {
@@ -370,6 +400,15 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
       const canvas = ref.nativeElement;
       const styleId = canvas.getAttribute('data-id');
       if (!styleId) return;
+
+      const card = canvas.closest('.anim-card') as HTMLElement;
+      if (card && !(card as any)._hasHoverBound) {
+        (card as any)._hasHoverBound = true;
+        this.ngZone.runOutsideAngular(() => {
+          card.addEventListener('mousemove', (e: MouseEvent) => this.onCardMouseMove(e, styleId), { passive: true });
+          card.addEventListener('mouseleave', () => this.onCardMouseLeave(styleId), { passive: true });
+        });
+      }
 
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
@@ -395,7 +434,9 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.previewData.size > 0) {
       this.lastPreviewTime = performance.now();
-      this.previewAnimationFrameId = requestAnimationFrame(this.animatePreviews);
+      this.ngZone.runOutsideAngular(() => {
+        this.previewAnimationFrameId = requestAnimationFrame(this.animatePreviews);
+      });
     }
   }
 
@@ -536,8 +577,16 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.previewTime += dt;
 
     const isDark = this.themeService.isDarkMode();
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
 
     this.previewData.forEach((data, styleId) => {
+      // Viewport culling: only render visible cards
+      const rect = data.canvas.getBoundingClientRect();
+      if (rect.bottom < -40 || rect.top > vh + 40 || rect.right < 0 || rect.left > vw) {
+        return;
+      }
+
       const ctx = data.ctx;
       const w = data.width;
       const h = data.height;
@@ -790,27 +839,6 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.previewAnimationFrameId = requestAnimationFrame(this.animatePreviews);
   };
 
-  @HostListener('window:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent): void {
-    this.mouseX = event.clientX;
-    this.mouseY = event.clientY;
-    this.isMouseOver = true;
-  }
-
-  @HostListener('window:mouseleave')
-  onMouseLeave(): void {
-    this.isMouseOver = false;
-  }
-
-  @HostListener('window:touchmove', ['$event'])
-  onTouchMove(event: TouchEvent): void {
-    if (event.touches.length > 0) {
-      this.mouseX = event.touches[0].clientX;
-      this.mouseY = event.touches[0].clientY;
-      this.isMouseOver = true;
-    }
-  }
-
   selectAnimation(anim: AnimStyle) {
     this.stopPreviewLoop();
     this.activeAnim.set(anim);
@@ -843,7 +871,9 @@ export class FreeServicesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resizeCanvas();
     
     this.lastTime = performance.now();
-    this.animate(this.lastTime);
+    this.ngZone.runOutsideAngular(() => {
+      this.animate(this.lastTime);
+    });
   }
 
   private resizeCanvas() {
