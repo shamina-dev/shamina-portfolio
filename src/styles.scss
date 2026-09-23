@@ -97,6 +97,27 @@ html, body {
   box-sizing: inherit;
 }
 
+/* Custom Cursor: Hide default OS pointer on fine-pointer desktop devices */
+@media (pointer: fine) {
+  body,
+  a,
+  button,
+  [role="button"],
+  input,
+  textarea,
+  select,
+  .cursor-pointer,
+  .btn,
+  .btn-neon,
+  .glass-card,
+  .branding-social-btn,
+  .mode-pill,
+  .palette-swatch-btn {
+    cursor: none !important;
+  }
+}
+
+
 section {
   position: relative;
   z-index: 3;

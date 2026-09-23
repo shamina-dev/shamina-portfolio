@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, AfterViewInit, OnDestroy, HostListener, NgZone } from '@angular/core';
 import { ThemeService } from '../../core/services/theme.service';
 import { Subscription } from 'rxjs';
 
@@ -32,7 +32,20 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
   private connectionDistance: number = 110;
   private mouseConnectionDistance: number = 160;
 
-  constructor(public themeService: ThemeService) {}
+  private onMouseMovePassive = (e: MouseEvent) => {
+    this.mouseX = e.clientX;
+    this.mouseY = e.clientY;
+    this.isMouseOver = true;
+  };
+
+  private onMouseLeavePassive = () => {
+    this.isMouseOver = false;
+  };
+
+  constructor(
+    public themeService: ThemeService,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit(): void {}
 
@@ -41,7 +54,12 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
     this.ctx = canvas.getContext('2d');
     this.resizeCanvas();
     this.initParticles();
-    this.animate();
+
+    this.ngZone.runOutsideAngular(() => {
+      window.addEventListener('mousemove', this.onMouseMovePassive, { passive: true });
+      window.addEventListener('mouseleave', this.onMouseLeavePassive, { passive: true });
+      this.animate();
+    });
 
     this.themeSub = this.themeService.theme$.subscribe(() => {
       // Trigger re-render adjustments on theme toggle if needed
@@ -55,24 +73,14 @@ export class BackgroundComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.themeSub) {
       this.themeSub.unsubscribe();
     }
+    window.removeEventListener('mousemove', this.onMouseMovePassive);
+    window.removeEventListener('mouseleave', this.onMouseLeavePassive);
   }
 
   @HostListener('window:resize')
   onResize(): void {
     this.resizeCanvas();
     this.initParticles();
-  }
-
-  @HostListener('window:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent): void {
-    this.mouseX = event.clientX;
-    this.mouseY = event.clientY;
-    this.isMouseOver = true;
-  }
-
-  @HostListener('window:mouseleave')
-  onMouseLeave(): void {
-    this.isMouseOver = false;
   }
 
   private resizeCanvas(): void {
